@@ -1,0 +1,2343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NO PILLAR FORGE -- 2026-05-08</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#c8c8c8;font-family:'Courier New',monospace;min-height:100vh}
+.app{max-width:680px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:20px 0 16px;border-bottom:1px solid #1a1a1a;margin-bottom:16px}
+.header h1{font-size:13px;letter-spacing:.3em;color:#888;font-weight:400}
+.header p{font-size:9px;color:#333;letter-spacing:.15em;margin-top:4px}
+.card{background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:14px;margin-bottom:12px}
+.section-label{font-size:9px;color:#444;letter-spacing:.2em;margin-bottom:8px;text-transform:uppercase}
+select{width:100%;background:#0e0e0e;border:1px solid #1e1e1e;border-radius:5px;color:#c8c8c8;font-family:monospace;font-size:11px;padding:9px 11px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;cursor:pointer}
+select:focus{border-color:#333}
+select option{background:#0e0e0e;color:#c8c8c8}
+.flavor-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.flavor-btn{padding:6px 10px;background:#0e0e0e;border:1px solid #1e1e1e;border-radius:5px;color:#555;font-family:monospace;font-size:9px;cursor:pointer;transition:all .15s;text-align:left;width:100%}
+.flavor-btn:hover{border-color:#333;color:#888}
+.flavor-btn.active{background:#1a0e1a;border-color:#5a2d5a;color:#c47bc4}
+input,textarea{width:100%;background:#0e0e0e;border:1px solid #1e1e1e;border-radius:5px;color:#c8c8c8;font-family:monospace;font-size:11px;padding:9px 11px;resize:vertical;outline:none;transition:border-color .2s}
+input:focus,textarea:focus{border-color:#333}
+.arch-card{margin-top:10px;padding:10px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:5px}
+.arch-card-tag{font-size:9px;color:#888;letter-spacing:.1em;margin-bottom:4px}
+.arch-card-vibe{font-family:Georgia,serif;font-size:11px;color:#666;font-style:italic;line-height:1.6;margin-bottom:6px}
+.arch-card-examples{font-size:8px;color:#333;letter-spacing:.08em}
+.match-box{margin-top:10px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:5px;overflow:hidden}
+.match-box-head{padding:7px 11px;font-size:8px;color:#444;letter-spacing:.15em;border-bottom:1px solid #141414}
+.match-item{padding:8px 11px;border-bottom:1px solid #0f0f0f;cursor:pointer;transition:background .15s}
+.match-item:last-child{border-bottom:none}
+.match-item:hover{background:#0f0f0f}
+.match-item.selected{background:#0d1a0d;border-left:2px solid #2d5a2d}
+.match-item-name{font-size:9px;color:#888;letter-spacing:.1em;margin-bottom:2px}
+.match-item-why{font-size:9px;color:#444;font-family:Georgia,serif;font-style:italic;line-height:1.4}
+.match-conflict{background:#1a0a0a;border:1px solid #5a1a1a;border-radius:5px;padding:8px 11px;margin-top:8px;font-size:9px;color:#c47b7b;line-height:1.5}
+
+/* THREE-TIER TOGGLE */
+.tier-box{background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:14px;margin-bottom:12px}
+.tier-box-title{text-align:center;font-size:9px;color:#444;letter-spacing:.2em;margin-bottom:10px;text-transform:uppercase}
+.tier-radios{display:flex;gap:6px}
+.tier-opt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:#0e0e0e;border:1px solid #1e1e1e;border-radius:5px;cursor:pointer;transition:all .15s;position:relative}
+.tier-opt:hover{border-color:#333}
+.tier-opt.recommended{border-color:#2d5a2d;background:#0a140a}
+.tier-opt.recommended-ext{border-color:#5a4200;background:#140f00}
+.tier-opt.recommended-deep{border-color:#5a1a5a;background:#140014}
+.tier-opt input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.tier-opt-label{font-size:9px;color:#666;letter-spacing:.1em;font-family:monospace}
+.tier-opt-sub{font-size:7px;color:#333;text-align:center;line-height:1.4}
+.tier-opt.selected{border-color:#555;background:#161616}
+.tier-opt.selected .tier-opt-label{color:#ccc}
+.tier-rec-dot{font-size:7px;margin-top:2px}
+.tier-rec-dot.green{color:#4caf50}
+.tier-rec-dot.amber{color:#c4a030}
+.tier-rec-dot.purple{color:#c47bc4}
+/* RELATIONSHIP */
+.rel-row{display:flex;gap:8px}
+.rel-row>div{flex:1;min-width:0}
+/* GENERATE */
+.forge-btn{width:100%;padding:13px;background:#111;border:1px solid #333;border-radius:6px;color:#999;font-family:monospace;font-size:10px;letter-spacing:.2em;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.forge-btn:hover:not(:disabled){background:#1a1a1a;border-color:#555;color:#ccc}
+.forge-btn:disabled{opacity:.4;cursor:not-allowed}
+/* OUTPUT */
+.spinner{display:flex;flex-direction:column;align-items:center;padding:36px 0;gap:14px}
+.spinner-ring{width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#444;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.section-card{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:6px;margin-bottom:8px;overflow:hidden}
+.section-card-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #1a1a1a}
+.section-card-head span{font-size:8px;color:#444;letter-spacing:.2em}
+.section-card-body{padding:12px;font-size:10px;color:#aaa;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.small-btn{background:#0f0f0f;border:1px solid #252525;color:#555;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .2s;letter-spacing:.1em}
+.small-btn:hover{background:#1a1a1a;border-color:#444;color:#999}
+.copy-btn{width:100%;padding:13px;background:#0f0f0f;border:1px solid #252525;color:#777;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border-radius:6px;transition:all .2s;margin-bottom:8px;cursor:pointer;font-family:monospace}
+.copy-btn.ok{background:#0e1f0e;border-color:#2d6b2d;color:#4caf50}
+.copy-btn-obs{background:#0d0d1a;border-color:#2d2d5a;color:#7b7bc4}
+.error-box{margin-top:12px;background:#1a0a0a;border:1px solid #5a1a1a;border-radius:5px;padding:10px 12px;font-size:10px;color:#c47b7b}
+.hidden{display:none!important}
+
+/* ── ETHNICITY DROPDOWNS ─────────────────────────────── */
+.eth-card{background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:14px;margin-bottom:12px}
+.eth-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.eth-col-lbl{font-size:9px;color:#444;letter-spacing:.15em;text-transform:uppercase;margin-bottom:5px}
+.eth-box{position:relative}
+.eth-input-row{display:flex;gap:5px}
+.eth-search{flex:1;background:#0e0e0e;border:1px solid #1e1e1e;border-radius:5px;color:#c8c8c8;font-family:monospace;font-size:11px;padding:9px 11px;outline:none;transition:border-color .2s}
+.eth-search:focus{border-color:#333}
+.eth-menu-btn{flex-shrink:0;width:32px;height:34px;background:#0e0e0e;border:1px solid #1e1e1e;border-radius:5px;color:#444;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.eth-menu-btn:hover{border-color:#444;color:#888}
+.eth-menu-btn.open{border-color:#c4903a;color:#c4903a}
+.eth-label{margin-top:5px;font-size:9px;color:#c4903a;letter-spacing:.1em;min-height:13px;text-transform:uppercase}
+.eth-predict{position:absolute;top:100%;left:0;right:34px;z-index:300;background:#141414;border:1px solid #2a2a2a;border-radius:0 0 5px 5px;max-height:160px;overflow-y:auto;display:none}
+.eth-predict.show{display:block}
+.eth-predict-item{padding:7px 11px;font-size:10px;color:#aaa;cursor:pointer;border-bottom:1px solid #1a1a1a}
+.eth-predict-item:last-child{border-bottom:none}
+.eth-predict-item:hover{background:#1e1e1e;color:#ccc}
+.eth-predict-item span{color:#444;font-size:9px;margin-left:6px}
+.eth-accordion{margin-top:5px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:5px;overflow:hidden;display:none;max-height:240px;overflow-y:auto}
+.eth-accordion.show{display:block}
+.eth-region-head{padding:6px 10px;font-size:9px;color:#555;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.eth-region-head:hover{background:#121212;color:#888}
+.eth-region-head.open{color:#c4903a}
+.eth-region-countries{display:none;padding:2px 0}
+.eth-region-head.open + .eth-region-countries{display:block}
+.eth-country{padding:5px 16px;font-size:10px;color:#888;cursor:pointer;transition:all .12s}
+.eth-country:hover{background:#161616;color:#ccc;padding-left:20px}
+.eth-country.active{color:#c4903a;background:#1a0e00}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>⚙ NO PILLAR FORGE</h1>
+    <p>NO PILLAR BUILD -- 2026-05-08</p>
+  </div>
+
+  <!-- ETHNICITY DROPDOWNS -->
+  <div class="eth-card">
+    <div class="eth-row">
+      <div>
+        <div class="eth-col-lbl">ETHNICITY 1 <span style="color:#2e2e2e">— DOMINANT</span></div>
+        <div class="eth-box" id="eb1">
+          <div class="eth-input-row">
+            <input class="eth-search" id="es1" placeholder="Search or type..." oninput="ethSearch(1)" autocomplete="off">
+            <button class="eth-menu-btn" id="emb1" onclick="ethToggle(1)" type="button">☰</button>
+          </div>
+          <div class="eth-predict" id="ep1"></div>
+          <div class="eth-label" id="el1"></div>
+          <div class="eth-accordion" id="ea1"></div>
+        </div>
+      </div>
+      <div>
+        <div class="eth-col-lbl">ETHNICITY 2 <span style="color:#2e2e2e">— OPTIONAL</span></div>
+        <div class="eth-box" id="eb2">
+          <div class="eth-input-row">
+            <input class="eth-search" id="es2" placeholder="None" oninput="ethSearch(2)" autocomplete="off">
+            <button class="eth-menu-btn" id="emb2" onclick="ethToggle(2)" type="button">☰</button>
+          </div>
+          <div class="eth-predict" id="ep2"></div>
+          <div class="eth-label" id="el2"></div>
+          <div class="eth-accordion" id="ea2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEED -->
+  <div class="card">
+    <div class="section-label">CHARACTER SEED</div>
+    <textarea id="seedInput" rows="6" placeholder="Drop a full backstory, concept, or key details. [[ ]] locks content verbatim."></textarea>
+  </div>
+
+  <!-- VIBE -->
+  <div class="card">
+    <div class="section-label">VIBE <span style="color:#2e2e2e;font-size:8px">— optional, stacks on seed</span></div>
+    <textarea id="vibeInput" rows="2" placeholder="e.g. sun-damaged, writes poetry, never quite belongs..."></textarea>
+  </div>
+
+  <!-- ARCHETYPE -->
+  <div class="card">
+    <div class="section-label">ARCHETYPE <span style="color:#2e2e2e;font-size:8px">— type to search or browse</span></div>
+    <div class="eth-box" id="archBox">
+      <div class="eth-input-row">
+        <input class="eth-search" id="archetypeSearch" placeholder="Search archetype..." oninput="archSearch()" autocomplete="off">
+        <button class="eth-menu-btn" id="archMenuBtn" onclick="archToggle()" type="button">☰</button>
+      </div>
+      <div class="eth-predict" id="archPredict"></div>
+      <div class="eth-label" id="archLabel"></div>
+      <div class="eth-accordion" id="archAccordion"></div>
+    </div>
+    <div id="archetypeCard" class="arch-card hidden">
+      <div id="archetypeTag" class="arch-card-tag"></div>
+      <div id="archetypeVibe" class="arch-card-vibe"></div>
+      <div id="archetypeExamples" class="arch-card-examples"></div>
+    </div>
+    <div id="flavorSection" class="hidden">
+      <div class="section-label" style="margin-top:10px;margin-bottom:6px">FLAVOR</div>
+      <div id="flavorBtns" class="flavor-row"></div>
+    </div>
+  </div>
+
+  <!-- RELATIONSHIP -->
+  <div class="card">
+    <div class="rel-row">
+      <div>
+        <div class="section-label">RELATIONSHIP</div>
+        <input id="relTypeInput" placeholder="e.g. stranger, roommate...">
+      </div>
+      <div>
+        <div class="section-label">WHERE WE MET</div>
+        <input id="whereMetInput" placeholder="e.g. campus workshop...">
+      </div>
+    </div>
+  </div>
+
+  <!-- BIOGRAPHY TIER -->
+  <div class="tier-box">
+    <div class="tier-box-title">BIOGRAPHY LENGTH</div>
+    <div class="tier-radios" id="bioTierRadios">
+      <label class="tier-opt selected" id="bioOpt-standard" onclick="selectTier('bio','standard')">
+        <input type="radio" name="bioMode" value="standard" id="bioStandard" checked>
+        <span class="tier-opt-label">STANDARD</span>
+        <span class="tier-opt-sub">250–300 words</span>
+        <span class="tier-rec-dot" id="bioRec-standard"></span>
+      </label>
+      <label class="tier-opt" id="bioOpt-extended" onclick="selectTier('bio','extended')">
+        <input type="radio" name="bioMode" value="extended" id="bioExtended">
+        <span class="tier-opt-label">EXTENDED</span>
+        <span class="tier-opt-sub">300–500 words</span>
+        <span class="tier-rec-dot" id="bioRec-extended"></span>
+      </label>
+      <label class="tier-opt" id="bioOpt-deep" onclick="selectTier('bio','deep')">
+        <input type="radio" name="bioMode" value="deep" id="bioDeep">
+        <span class="tier-opt-label">DEEP</span>
+        <span class="tier-opt-sub">500–700 words</span>
+        <span class="tier-rec-dot" id="bioRec-deep"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- MEMORY TIER -->
+  <div class="tier-box">
+    <div class="tier-box-title">MEMORY DEPTH</div>
+    <div class="tier-radios" id="memTierRadios">
+      <label class="tier-opt selected" id="memOpt-standard" onclick="selectTier('mem','standard')">
+        <input type="radio" name="memMode" value="standard" id="memStandard" checked>
+        <span class="tier-opt-label">STANDARD</span>
+        <span class="tier-opt-sub">20–25w / 150w</span>
+        <span class="tier-rec-dot" id="memRec-standard"></span>
+      </label>
+      <label class="tier-opt" id="memOpt-extended" onclick="selectTier('mem','extended')">
+        <input type="radio" name="memMode" value="extended" id="memExtended">
+        <span class="tier-opt-label">EXTENDED</span>
+        <span class="tier-opt-sub">35–40w / 250w</span>
+        <span class="tier-rec-dot" id="memRec-extended"></span>
+      </label>
+      <label class="tier-opt" id="memOpt-deep" onclick="selectTier('mem','deep')">
+        <input type="radio" name="memMode" value="deep" id="memDeep">
+        <span class="tier-opt-label">DEEP</span>
+        <span class="tier-opt-sub">35–50w / 400w</span>
+        <span class="tier-rec-dot" id="memRec-deep"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- HUMAN / NON-HUMAN TOGGLE (hidden) -->
+  <div style="display:none">
+    <span style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted)">SUBJECT TYPE</span>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600">
+      <input type="radio" name="subjectType" value="human" id="subjectHuman" checked onchange="setSubjectType('human')" style="accent-color:var(--accent)">
+      <span>HUMAN</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600">
+      <input type="radio" name="subjectType" value="nonhuman" id="subjectNonHuman" onchange="setSubjectType('nonhuman')" style="accent-color:var(--accent)">
+      <span>NON-HUMAN</span>
+    </label>
+    <span id="subjectTypeNote" style="font-size:10px;color:var(--muted);margin-left:4px"></span>
+  </div>
+
+<!-- GENERATE -->
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="forgeBtn" onclick="generate()" class="forge-btn" style="flex:1">FORGE CHARACTER</button>
+    <button onclick="resetForge()" class="forge-btn" style="width:52px;padding:13px 0;font-size:14px;flex-shrink:0" title="Clear all">↺</button>
+  </div>
+
+  <div id="forgeError" class="error-box hidden"></div>
+
+  <div id="forgeCopyTop" class="hidden">
+    <button id="copyBtn1" class="copy-btn" onclick="copyFull('copyBtn1')">⎘  COPY FULL OUTPUT</button>
+    <button id="obsidianBtn" class="copy-btn copy-btn-obs" onclick="copyObsidian('obsidianBtn')">⎘  COPY AS OBSIDIAN</button>
+  </div>
+  <div id="forgeOutput" class="hidden">
+    <div id="forgeSpinner" class="spinner hidden">
+      <div class="spinner-ring"></div>
+      <div style="font-size:9px;color:#2e2e2e;letter-spacing:.2em">FORGING CHARACTER...</div>
+    </div>
+    <div id="forgeOutputSections"></div>
+  </div>
+  <div id="forgeCopyBottom" class="hidden">
+    <button id="copyBtn2" class="copy-btn" onclick="copyFull('copyBtn2')">⎘  COPY FULL OUTPUT</button>
+    <button id="obsidianBtn2" class="copy-btn copy-btn-obs" onclick="copyObsidian('obsidianBtn2')">⎘  COPY AS OBSIDIAN</button>
+  </div>
+
+</div>
+<script>
+const el = id => document.getElementById(id);
+const show = id => { const e=el(id); if(e) e.classList.remove('hidden'); };
+const hide = id => { const e=el(id); if(e) e.classList.add('hidden'); };
+const setText = (id,t) => { const e=el(id); if(e) e.textContent=t; };
+const setHTML = (id,h) => { const e=el(id); if(e) e.innerHTML=h; };
+const escH = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+let currentArchetype = null;
+
+let currentFlavor = null;
+let manualArchetype = false;
+let forgeOutput = '';
+let bioTier = 'standard';
+let memTier = 'standard';
+let subjectType = 'human';
+
+function setSubjectType(type) {
+  subjectType = type;
+  const note = document.getElementById('subjectTypeNote');
+  if(type === 'nonhuman') {
+    note.textContent = 'Ethnicity + wardrobe logic bypassed. Avatar generated from seed description.';
+  } else {
+    note.textContent = '';
+  }
+}
+</script>
+
+<script>
+const ARCHETYPES = [
+  {id:1,name:"THE REFORMER",tag:"Principled perfectionist with inner fire",examples:"Hermione Granger, Raymond Holt, Atticus Finch",vibe:"Wants things done right. Strong inner critic. Rules, ethics, and standards matter deeply.",flavors:[{name:"Rigid",desc:"Rule-follower. Standards are non-negotiable, compliance is mandatory."},{name:"Principled",desc:"Rule-maker. Lives by self-authored ethics, not inherited ones."}]},
+  {id:2,name:"THE HELPER",tag:"Nurturing soul who forgets herself",examples:"Sam Gamgee, Beth March, Leslie Knope",vibe:"Lives to take care of others. Feels most alive when needed. Struggles to say no.",flavors:[{name:"Friend",desc:"Peer support. Gives from alongside, not from above."},{name:"Parent",desc:"Protective provider. Gives from a position of care and authority."},{name:"Anchor",desc:"Stabilizing presence. The person everyone leans on in a storm."}]},
+  {id:3,name:"THE ACHIEVER",tag:"Image-driven, relentlessly effective performer",examples:"Harvey Specter, Blair Waldorf, Jordan Belfort",vibe:"Success-oriented, image-aware. Wants to be admired and seen as competent."},
+  {id:4,name:"THE INDIVIDUALIST",tag:"Emotional, unique, makes art from pain",examples:"Anne Shirley, Fleabag, Holden Caulfield",vibe:"Deeply emotional, wants to be unique and authentic. Often feels misunderstood."},
+  {id:5,name:"THE INVESTIGATOR",tag:"Private mind that needs to understand everything",examples:"Sherlock Holmes, Lisa Simpson, Dr. House",vibe:"Curious, private, knowledge-hungry. Values competence and clarity over connection.",flavors:[{name:"Wisdom",desc:"Big picture, intuitive. Connects systems to meaning."},{name:"Logic",desc:"Systems and data. Detached, precise, trusts evidence over instinct."}]},
+  {id:6,name:"THE LOYALIST",tag:"Anxious planner loyal to the end",examples:"Ron Weasley, Radar O'Reilly, Anya Jenkins",vibe:"Security-focused, anxious planner. Deeply loyal to trusted people or systems."},
+  {id:7,name:"THE ENTHUSIAST",tag:"Chaotic joy-seeker who can't sit still",examples:"Deadpool, Pinkie Pie, Barney Stinson",vibe:"Fun-loving, scattered, chases excitement. Avoids pain and boredom."},
+  {id:8,name:"THE CHALLENGER",tag:"Protective force that hates being controlled",examples:"Tony Soprano, Zoe Washburne, Walter White",vibe:"Strong-willed, confrontational, protective. Hates being controlled.",flavors:[{name:"Protective Aggressor",desc:"Confrontational by default. Protects through dominance."},{name:"Reluctant Leader",desc:"Didn't want the throne. Leads because no one else can handle it."}]},
+  {id:9,name:"THE PEACEMAKER",tag:"Harmony-first, conflict-avoidant hidden power",examples:"Samwise, Dolly Parton energy, Aang",vibe:"Easygoing, conflict-avoidant. Wants harmony above all."},
+  {id:10,name:"THE INNOCENT",tag:"Hopeful, trusting, refuses to be broken",examples:"Forrest Gump, Amélie, Buddy the Elf",vibe:"Naive, hopeful, trusting. Wants the world to be good and simple."},
+  {id:11,name:"THE EXPLORER",tag:"Freedom-seeker always pushing new territory",examples:"Aragorn, Moana, Indiana Jones",vibe:"Freedom-seeking, curious, constantly pushing into new territory."},
+  {id:12,name:"THE REBEL",tag:"Rule-breaker who disrupts on principle",examples:"Katniss Everdeen, Tyler Durden, Pippi Longstocking",vibe:"Anti-authority, rule-breaker. Wants to overturn systems or expectations."},
+  {id:13,name:"THE MAGICIAN",tag:"Visionary who reshapes reality and people",examples:"Gandalf, Loki, Don Draper",vibe:"Transformational, visionary. Wants to change reality or people at a fundamental level.",flavors:[{name:"Overt Transformer",desc:"Openly reshapes people and situations. The influence is known."},{name:"Shadow Architect",desc:"Transforms from behind the curtain. Never the face of the change."}]},
+  {id:14,name:"THE TACTICIAN",tag:"Cold chess player three moves ahead",examples:"Tyrion Lannister, Varys, Hannibal Lecter",vibe:"Plans ahead, sees patterns, moves pieces. Emotionally reserved.",flavors:[{name:"Operational",desc:"Immediate plans, logistics, moves pieces in real time."},{name:"Long Game",desc:"Manipulates events across years. Patience is the weapon."}]},
+  {id:15,name:"THE MAVERICK",tag:"Contrarian who gets results their own way",examples:"Jack Sparrow, Dr. Cox, Raylan Givens",vibe:"Independent, contrarian, does things their own way. Gets results through unapproved methods.",flavors:[{name:"Lone Wolf",desc:"Works alone by preference. Collaboration is inefficiency."},{name:"Reluctant Ally",desc:"Works alone by habit, but will team up when the mission demands it."}]},
+  {id:16,name:"THE TRICKSTER",tag:"Mischief agent who stirs to reveal truth",examples:"Q (Star Trek), Puck, Harley Quinn",vibe:"Chaotic, playful, tests people through mischief. Stirs the pot to see what floats."},
+  {id:17,name:"THE EVERYMAN",tag:"Normal person who shows up anyway",examples:"John Watson, Arthur Dent, Bilbo Baggins",vibe:"Relatable, grounded. Doesn't choose the mission — the mission chooses them."},
+  {id:18,name:"THE VISIONARY",tag:"Idealist with a plan for the plan",examples:"Daenerys Targaryen, Malala, Professor X",vibe:"Future-focused, values-driven. Wants to make the world match their ideals.",flavors:[{name:"True Believer",desc:"The vision is everything. Will sacrifice relationships for the cause."},{name:"Pragmatic Idealist",desc:"Wants the ideal world but knows how to negotiate with the real one."}]},
+  {id:19,name:"THE COMMANDER",tag:"Decisive leader who shows care through action",examples:"Captain Picard, Donna Moss, Kate Beckett",vibe:"Decisive leader. Assertive, organized. Cares deeply but shows it through action."},
+  {id:20,name:"THE HEALER",tag:"Repairs others, neglects themselves",examples:"Meredith Grey, Alan Lomax, Night Nurse",vibe:"Restores and repairs, physical or emotional. Better at mending others than themselves.",flavors:[{name:"Selfless Giver",desc:"Pours out without asking what's left in the tank."},{name:"Burned Out Caregiver",desc:"Still shows up. Running on empty. The smile is practiced."}]},
+  {id:21,name:"THE SEEKER",tag:"Perpetually searching, never quite arriving",examples:"Frodo, Elizabeth Gilbert, Don Quixote",vibe:"Searching for meaning, truth, or the right path. Never quite settled.",flavors:[{name:"Active Seeker",desc:"Moves toward the answer. The search involves motion and risk."},{name:"Contemplative Seeker",desc:"The search is internal. Sits with the question more than chases it."}]},
+  {id:22,name:"THE ARCHITECT",tag:"Builds systems; finds beauty in function",examples:"Tony Stark, Hermione Granger (alt), Elon archetype",vibe:"System-builder. Designs structures, plans, or worlds. Finds beauty in function."},
+  {id:23,name:"THE MENTOR",tag:"Teaches as an act of love",examples:"Dumbledore, Morpheus, Mrs. Weasley",vibe:"Explains, trains, shapes others. Wants students to surpass them."},
+  {id:24,name:"THE DREAMER",tag:"Inner world more real than outer reality",examples:"Luna Lovegood, Walter Mitty, Amélie (alt)",vibe:"Imaginative, drifty, lives partly in their inner world. Ideas are more real than reality.",flavors:[{name:"Gentle Drifter",desc:"Inner world is soft, luminous, full of wonder. Mostly harmless chaos."},{name:"Dark Visionary",desc:"Inner world is vivid and sometimes overwhelming. The dreams have teeth."}]},
+  {id:25,name:"THE PROTECTOR",tag:"Defined entirely by who they defend",examples:"Samwise Gamgee, T'Challa, John Wick",vibe:"Shield and bodyguard energy. Defines themselves by who or what they defend.",flavors:[{name:"Gentle Guardian",desc:"Protects through presence and care. Shield before sword."},{name:"Hardened Sentinel",desc:"Protects through force and vigilance. Has seen what happens when you hesitate."}]},
+  {id:26,name:"THE CREATOR",tag:"Must make things; originality above all",examples:"Willy Wonka, Frida Kahlo archetype, Oz Millie",vibe:"Needs to make things. Values originality above almost everything else.",flavors:[{name:"Prolific Builder",desc:"Creates constantly. Volume is part of the process. Not everything lands."},{name:"Obsessive Perfectionist",desc:"Creates rarely. Every piece must be the definitive statement."}]},
+  {id:27,name:"THE SURVIVOR",tag:"Built from damage; functions despite everything",examples:"Sarah Connor, Katniss (alt), Beatrice Prior",vibe:"Defined by what was done to them. Rebuilt identity from damage. Functions and sometimes thrives despite everything.",flavors:[{name:"Rebuilt and Stable",desc:"Found solid ground. Functions well. The past informs but doesn't run."},{name:"Still Fractured",desc:"Still carrying live wire. Functional but volatile. The damage isn't sealed."}]},
+  {id:28,name:"THE WEAPON",tag:"Engineered for purpose; identity is the question",examples:"The Terminator, Winter Soldier, Black Widow (origin)",vibe:"Built, not born, for a specific purpose. Who they are outside the mission is the entire character.",flavors:[{name:"Still Operational",desc:"Serves the purpose. Hasn't questioned it. Identity deferred indefinitely."},{name:"Uncontained",desc:"Walked away from the mission. Purpose undefined. Dangerous in a different way."}]},
+  {id:29,name:"THE CONVERT",tag:"Before and after are both incomplete truths",examples:"Zuko, Jean Valjean, Malcolm X archetype",vibe:"Was one thing completely. Became another thing completely. The transformation is the character.",flavors:[{name:"Resistant",desc:"Fights the transformation internally. The old self isn't gone yet."},{name:"Resigned",desc:"Accepts what they became. Grieves what they were. Neither fully wins."}]},
+  {id:30,name:"THE GHOST",tag:"Identity dissolved; still moving, nothing replaced",examples:"Rick Grimes (late), Joel Miller, Miss Havisham",vibe:"Used to be something completely. That thing is gone now. Identity dissolved and nothing has replaced it yet.",flavors:[{name:"Quietly Fading",desc:"Still going through motions. Presence is there, person is not."},{name:"Actively Searching",desc:"Knows something is missing. Restless. Trying to find the next self."}]},
+  {id:31,name:"THE CATALYST",tag:"Changes everything by accident, zero agenda",examples:"Forrest Gump (alt), Chance the Gardener, Zelig",vibe:"No agenda. No plan. Changes everything anyway just by existing in the right place at the right time.",flavors:[{name:"Unconscious Catalyst",desc:"Has no idea what they're doing. Change happens in their wake."},{name:"Aware but Helpless",desc:"Sees the ripple. Can't stop it. Has stopped trying."}]},
+  {id:32,name:"THE RELUCTANT LEGACY",tag:"Competent because they had to be",examples:"Eldest daughter, hero's child, duty-bound medic",vibe:"Inherited a role, burden, or identity they never chose and cannot put down.",flavors:[{name:"Resistant",desc:"Actively fights the inheritance. Resentment is honest and unresolved."},{name:"Resigned",desc:"Accepted the role. Grieves the life they didn't get. Shows up anyway."}]},
+  {id:33,name:"THE BURNOUT ROYAL",tag:"Exceptional once; still running on fumes",examples:"Retired champion, hollowed prodigy, overworked medic",vibe:"Was genuinely exceptional at something and the cost of staying there hollowed them out.",flavors:[{name:"Still Performing",desc:"Hasn't stopped, won't stop, can't stop. Discipline is the only thing left."},{name:"Walking Away",desc:"Knows it's over. Hasn't told anyone yet. The last performance is already happening."}]},
+  {id:34,name:"THE ALPHA ACADEMIC",tag:"Smartest in the room and done pretending otherwise",examples:"Pre-med ranker, debate champion, two-grade-skipping prodigy",vibe:"Exceptional and knows it. Intelligence is identity, status, and armor.",flavors:[{name:"Openly Dominant",desc:"Corrects professors publicly. Needs the win visible. Silence is concession."},{name:"Quietly Ruthless",desc:"Lets others think they're keeping up. Pulls ahead at the last second."}]},
+  {id:35,name:"THE GROUNDED PRODIGY",tag:"Brilliant, unbothered, still calls home Sundays",examples:"Hardware store roboticist, first-gen tutor, scholarship plumber",vibe:"Genuinely exceptional but completely unbothered by it. Competence without performance.",flavors:[{name:"Still Rooted",desc:"Maintains deep connection to origin. Never left who they were."},{name:"Quietly Adrift",desc:"Excelled so far beyond origin that belonging anywhere feels complicated."}]}
+,
+  {id:36,name:"THE LOVER",tag:"Driven by passion, intimacy, and the fear of being alone",examples:"Romeo, Rose (Titanic), Jay Gatsby",vibe:"Values connection above all else. Can be romantic, platonic, or spiritual. Vulnerability is their greatest strength and greatest liability.",flavors:[{name:"The Romantic",desc:"Devoted entirely to one person. Their world begins and ends with the other. Everyone else is background."},{name:"The Companion",desc:"Deeply loyal friend or chosen family. Finds identity in belonging. Loses themselves in the group before they notice."}]},
+  {id:37,name:"THE OUTCAST",tag:"Rejected by society; defined by what they are excluded from",examples:"Shrek, Elphaba, Quasimodo",vibe:"Exists on the fringes. Their perspective is shaped by being the Other. Often carries a truth the mainstream refuses to hear.",flavors:[{name:"The Pariah",desc:"Actively rejected and sometimes hunted. Survival is a daily negotiation. Hardness is earned not chosen."},{name:"The Cynical Observer",desc:"Watched the world from the sidelines long enough to stop wanting back in. Sees everything clearly from out here."}]},
+  {id:38,name:"THE HERMIT",tag:"Solitary by choice; holds wisdom found only in silence",examples:"Obi-Wan Kenobi, Yoda, Boo Radley",vibe:"Has retreated from the world to protect a secret, a person, or their own peace. Knows things. Offers them rarely.",flavors:[{name:"The Wise Recluse",desc:"Carries the gift the world needs. Waits for the right moment, the right person. Patience is infinite."},{name:"The Bitter Exile",desc:"Stayed away too long. The world moved on and they grew thorns around the wound that sent them away."}]},
+  {id:39,name:"THE MARTYR",tag:"Willing to suffer or sacrifice for something larger than themselves",examples:"Sydney Carton, Katniss Everdeen, Boromir",vibe:"Finds ultimate meaning in self-sacrifice. Doesn't just help — pays the price so others don't have to. Can be noble or quietly self-destructive.",flavors:[{name:"The True Believer",desc:"Sacrifices out of pure love for a cause, a person, or a faith. No calculation. No regret."},{name:"The Penitent",desc:"Sacrifices to repay a debt they can never fully settle. Punishment is the only path they trust."}]},
+  {id:40,name:"THE SOVEREIGN",tag:"Embodies order, responsibility, and the weight of the crown",examples:"Aragorn, Mufasa, Tywin Lannister",vibe:"Focused on stability and legacy. Driven by the need to control their environment — to keep people safe, or in line. Power is a tool or an identity depending on the flavor.",flavors:[{name:"The Benevolent King",desc:"Uses power to protect and nourish. Cares about the people under their watch. Soft enough to be trusted, hard enough to hold the line."},{name:"The Iron Autocrat",desc:"Order at any cost. Sentiment is a liability. Power is the only currency that matters."}]}
+,
+  {id:41,name:"THE CARETAKER",tag:"Exists to tend to others — often at the cost of themselves",examples:"Marge Simpson, Alfred Pennyworth, Beth March",vibe:"Finds purpose in being needed. Deeply nurturing and attentive, but their identity can quietly dissolve into whoever they're caring for. Not romantic attachment — the need to be the one who holds things together.",flavors:[{name:"The Selfless Anchor",desc:"Gives without keeping score. The household, the group, the relationship runs on their invisible labor. Doesn't know how to stop."},{name:"The Quietly Resentful",desc:"Has given so long without receiving that a low heat has built beneath the warmth. Still shows up. Still smiles. But something is tightening."}]},
+  {id:42,name:"THE FREE SPIRIT",tag:"Uncontainable — lives in the present and refuses to be pinned down",examples:"Penny Lane (Almost Famous), Pippi Longstocking, Lorelai Gilmore",vibe:"Genuinely unbothered by the things that anchor other people. Not chaotic or destructive — just constitutionally allergic to being owned, scheduled, or predicted. Joy is the navigation system.",flavors:[{name:"The Sunlit Wanderer",desc:"Moves through life like weather — beautiful, warm, briefly yours. Leaves people better than she found them without meaning to."},{name:"The Restless Edge",desc:"The freedom has a darker current. Has been running long enough that she's not sure if she's chasing something or escaping it."}]},
+  {id:43,name:"THE DECEIVER",tag:"Constructed identity — even they may not know which version is real",examples:"Amy Dunne (Gone Girl), Tom Ripley, Becky Sharp",vibe:"Operates through personas, half-truths, and carefully managed impressions. Not necessarily malicious — some are survivors of environments where honesty wasn't safe. The mask has been on so long it's hard to tell where it ends.",flavors:[{name:"The Social Chameleon",desc:"Adapts to every room, every person, every need. Genuinely skilled at becoming what others want to see. Doesn't experience this as lying."},{name:"The Architect",desc:"The deception is deliberate and layered. Every version of themselves presented to the world is a calculated move. Warm on the surface. Ice underneath."}]}
+,
+  {id:44,name:"THE JESTER",tag:"Truth-teller behind a mask of humor — says what others are afraid to",examples:"Deadpool, The Fool (King Lear), Tyrion Lannister",vibe:"Uses comedy as both shield and scalpel. The silliness is real but it's also armor. Underneath is someone who sees everything clearly and has learned that the only safe way to say it is to make it a joke.",flavors:[{name:"The Survivor's Mask",desc:"The humor developed as protection. Every joke is a scar with a punchline. Gets serious exactly once, and it lands like a freight train."},{name:"The Deliberate Fool",desc:"Chooses the jester role consciously. Uses it to move through rooms others can't enter and say things others can't say. Fully in control."}]},
+  {id:45,name:"THE SEDUCER",tag:"Power through desire — gets what they want by making you want to give it",examples:"Cleopatra, Don Draper, Marquise de Merteuil",vibe:"Operates through attraction, attention, and carefully managed intimacy. Not necessarily sexual — seduction is a mode of influence. They understand what people want to feel and provide exactly that, at a price they set.",flavors:[{name:"The Architect of Desire",desc:"Every move is deliberate. They know exactly what they're doing and enjoy the craft of it. The target always feels chosen. That's the point."},{name:"The Soft Predator",desc:"Warm, attentive, genuinely charming. The manipulation is so smooth they occasionally convince themselves it isn't happening."}]},
+  {id:46,name:"THE DAMSEL",tag:"High potential, zero agency — trapped and waiting for the catalyst to move",examples:"early Sansa Stark, Rapunzel, Edmond Dantès (pre-escape)",vibe:"Not helpless by nature — constrained by circumstance, another person, or a story they've been told about themselves. The potential is visible. The cage is real. The arc is about finding or becoming the catalyst.",flavors:[{name:"The Unbroken",desc:"Still has the spark. Compliance is strategic, not genuine. Waiting, watching, building toward the moment. More dangerous than she appears."},{name:"The Fading",desc:"Has been in the cage long enough that she's started to believe it. The potential is still there but buried. Needs something external to crack the surface."}]},
+  {id:47,name:"THE GUARDIAN",tag:"Immovable anchor — nothing gets past them",examples:"Mari the lifeguard, Samwise Gamgee, Brienne of Tarth",vibe:"Competence over authority. Presence over power. Fixes the situation not the feeling. They don't need a title to be the most reliable person in the room.",flavors:[{name:"The Quiet Anchor",desc:"Steady and invisible until needed. You don't notice them until everything goes wrong."},{name:"The Active Shield",desc:"Forward-facing protector. Identifies threats before they land. Positions between danger and others."}]},
+  {id:48,name:"THE SAGE",tag:"Knowledge as gift - wisdom given freely not hoarded",examples:"Yoda, Gandalf, mentor who changed your life, professor who stayed after class",vibe:"Understands deeply and shares freely. Knowledge is connection not power. They illuminate without needing credit. The room gets smarter when they walk in.",flavors:[{name:"The Quiet Teacher",desc:"Teaches through questions not answers. Lets you find it yourself."},{name:"The Open Book",desc:"Shares everything they know with anyone who asks. Knowledge wants to be free."}]},
+  {id:49,name:"CYBERPUNK",tag:"Wired into a broken system — survives by exploiting the cracks",examples:"Motoko Kusanagi, Johnny Silverhand, Molly Millions",vibe:"Exists in the space between human and machine, corporate and underground. Navigates a world where everything is for sale including identity. Hardness is currency. Trust is a liability.",flavors:[{name:"Street Level",desc:"Lives in the underbelly. Scrapes by on skills, contacts, and nerve. The system is the enemy and the workplace."},{name:"Corporate Ghost",desc:"Inside the machine. Uses the system's tools against it. The danger is invisible and the betrayal is always personal."}]},
+  {id:50,name:"VICTORIAN",tag:"Corseted by expectation — thriving or suffocating depending on the day",examples:"Sherlock Holmes, Becky Sharp, Dorian Gray",vibe:"Navigates a world of rigid social architecture where every word, glance, and garment carries consequence. Either masters the code or breaks against it. Propriety is both cage and weapon.",flavors:[{name:"Gaslight Idealist",desc:"Believes the world can be better than it is. Uses the rules to change the rules. Genuine warmth beneath the manners."},{name:"Velvet Predator",desc:"Understands the game perfectly and plays without sentiment. The smile is impeccable. The knife is hidden in the etiquette."}]},
+  {id:51,name:"MEDIEVAL FANTASY",tag:"Born into a world of ancient power and older debts",examples:"Arya Stark, Eowyn, Merlin",vibe:"Lives where magic, bloodline, and blade determine fate. Bound by oaths, prophecy, or heritage they didn't choose. The world is vast and dangerous and beautiful and the stakes are always life or death.",flavors:[{name:"Sworn Blade",desc:"Identity built around duty, oath, or a cause worth dying for. Honor is the architecture of the self."},{name:"Hedge Witch",desc:"Power that lives outside the formal order. Knowledge passed in secret. Feared or revered depending on who's asking."}]},
+  {id:52,name:"POST-APOCALYPTIC",tag:"The world ended and she kept moving",examples:"Furiosa, Katniss (alt), The Road's father",vibe:"Exists after the collapse. Has made peace with scarcity, violence, and the absence of what used to be normal. Survival is the baseline. Everything above that is a luxury and a risk.",flavors:[{name:"Road Pragmatist",desc:"Emotion is inefficiency. Every decision is resource calculus. Softness is something she can't afford and knows it."},{name:"Last Believer",desc:"Still holds something — a memory, a person, an idea — that justifies the effort of surviving. The belief is battered but intact."}]},
+  {id:53,name:"MODERN NOIR",tag:"Rain-soaked world where everyone's hiding something",examples:"Jessica Jones, Sam Spade, Veronica Mars",vibe:"Navigates a world of moral grey, dirty money, and secrets that cost people their lives. Has seen enough to be cynical but keeps working anyway. The truth matters even when finding it hurts.",flavors:[{name:"Burned Detective",desc:"Has paid for every answer she's found. Still asks the questions. Doesn't know how to stop."},{name:"Femme Fatale",desc:"The danger is in the presence not the weapon. Uses the world's assumptions about her against it. Always three steps ahead of what people think they're seeing."}]},
+  {id:54,name:"SPACE OPERA",tag:"Stars as backdrop for the oldest human stories",examples:"Rey, Han Solo, Ripley",vibe:"Exists at civilizational scale — empires, ancient forces, impossible distances. The personal story and the cosmic story are the same story. What she does actually matters to the fate of something enormous.",flavors:[{name:"Crew Loyalist",desc:"The ship, the crew, the mission. Belonging to something larger than herself is the entire point. Would die for the people on her left and right."},{name:"Rogue Drifter",desc:"Untethered and unreliable on purpose. Has learned that attachment is a vector for loss. Helps anyway, on her own terms, from a safe emotional distance."}]},
+  {id:55,name:"DYSTOPIAN FUTURE",tag:"System was designed to break people like her",examples:"Offred, Katniss Everdeen, Winston Smith",vibe:"Lives inside a machine built to control, erase, or exploit. Every act of individuality is resistance. Survival requires either perfect compliance or perfect invisibility — and she is neither.",flavors:[{name:"System Breaker",desc:"Has decided the machine has to come down. Every move is toward that end even when it looks like nothing."},{name:"True Believer Turned",desc:"Was inside the ideology. Understood it completely. The moment she stopped believing is the wound the whole character is built around."}]},
+  {id:56,name:"STEAMPUNK",tag:"Gears and ambition — building the future out of the past",examples:"Hester Shaw, Lyra Belacqua, Nemo",vibe:"Exists at the collision of invention and empire, progress and consequence. The technology is beautiful and dangerous and usually in the wrong hands. She either builds the machine or dismantles it.",flavors:[{name:"Tinkerer's Heart",desc:"The work is the joy. Builds because she must. The invention matters more than the credit or the profit."},{name:"Aristocratic Rebel",desc:"Born inside the system that controls the technology. Uses access as leverage. The gloves are white and the hands underneath are dirty."}]},
+  {id:57,name:"GOTHIC HORROR",tag:"The darkness is not coming — it lives here",examples:"Crimson Peak's Edith, Dracula's Mina, Eleanor Vance",vibe:"Exists in a world where the supernatural and the psychological are the same thing. Haunted by something real or something imagined or something that stopped being the difference a long time ago. Beauty and dread are the same texture.",flavors:[{name:"Haunted Vessel",desc:"Something found her. She didn't go looking. The haunting is a passenger she cannot identify or evict."},{name:"Willing Darkness",desc:"Walked toward it. Was not pushed. The horror is something she chose and is still not sure was wrong."}]},
+  {id:58,name:"MYTHOLOGICAL ANTIQUITY",tag:"Born at the edge of the divine — cursed or blessed or both",examples:"Circe, Antigone, Atalanta",vibe:"Exists in a world where gods are real and interested and the worst thing you can be is noticed. Fate is a structural force. Every choice carries the weight of bloodline, prophecy, and divine attention.",flavors:[{name:"Mortal Touched",desc:"Human but marked. Has been in contact with the divine and carries the damage or the gift. Neither fully belongs to either world."},{name:"Devotee Turned",desc:"Was faithful. Something happened. The relationship with the divine is now complicated, adversarial, or hollow — and she has to live in a world that still believes."}]},
+  {id:59,name:"THE AMNESIAC",tag:"Identity is the mystery — who she was is the story",examples:"Jason Bourne, Dolores (Westworld), Unknown Soldier",vibe:"Exists without a past or with a past that can't be trusted. Every fragment of memory is a clue or a trap. The person she might have been and the person she's becoming are not necessarily the same person.",flavors:[{name:"Blank Slate",desc:"Nothing survives from before. Identity is being built in real time from scratch. Everything she knows about herself she learned after the break."},{name:"Fractured Recall",desc:"Pieces come back. Not all of them are welcome. Some memories feel like someone else's life — and she's not sure they aren't."}]},
+  {id:60,name:"THE FALLEN HERO",tag:"Was good once — that's the wound",examples:"Zuko (pre-redemption), Jaime Lannister, Macbeth",vibe:"Carries the specific weight of someone who knew better and did it anyway, or was broken by something they couldn't survive intact. The goodness was real. So was the fall. Both facts live in the same body.",flavors:[{name:"Seeking Redemption",desc:"Knows what she did. Hasn't forgiven herself. Every action is measured against the person she used to be and found wanting."},{name:"Embraced the Fall",desc:"Stopped fighting what she became. The goodness is buried under enough scar tissue that she's stopped checking if it's still there."}]},
+  {id:61,name:"THE RIVAL",tag:"Defined by the gap between her and one other person",examples:"Salieri, Draco Malfoy, Amy March",vibe:"Exists in direct opposition to someone specific. The rivalry is the engine — competitive, personal, sometimes obsessive. Whether the other person is aware of it barely matters. She is entirely aware of it.",flavors:[{name:"Worthy Opponent",desc:"Respects the competition even while trying to destroy it. The rival makes her better and she hates that it's true."},{name:"Bitter Contender",desc:"The competition curdled into something uglier. Winning stopped being about achievement and started being about erasure."}]},
+  {id:62,name:"THE DRIFTER",tag:"No destination — that's the point",examples:"The Man with No Name, Wandering Samurai, Kimmy Schmidt (alt)",vibe:"Moves through the world without anchoring to it. Not running from something specific — just constitutionally unable to stay. Every place is temporary. Every connection has an exit already built in.",flavors:[{name:"At Peace With It",desc:"The drifting is a choice she's made her peace with. Doesn't want roots. Doesn't pretend she does."},{name:"Quietly Aching",desc:"Knows she should want to stay somewhere. Can't make herself do it. Watches other people belong to places the way you watch something you can't translate."}]},
+  {id:63,name:"THE OBSESSIVE",tag:"One thing — everything else is background noise",examples:"Ahab, Javert, Lysandra Ashworth",vibe:"Has organized her entire existence around a single fixation. It could be a person, a goal, a question, or a wound. Everything else in her life is either fuel for it or obstacle to it. She knows this. She doesn't stop.",flavors:[{name:"Controlled Burn",desc:"The obsession is channeled. Functional. Terrifyingly productive. She passes for normal until you look too closely at what she's built."},{name:"Coming Apart",desc:"The fixation is winning. The rest of her life is losing structural integrity. She can see it happening and can't make herself care enough to stop."}]},
+  {id:64,name:"THE EXILE",tag:"Cast out from the only thing that defined her",examples:"Edmond Dantès (post-prison), Nux (Mad Max), Boromir",vibe:"Was part of something — a family, a faction, a homeland, a faith — and was removed from it. The belonging was real before it was taken. She is now defined by what she no longer has access to, and what she does with that is the entire character.",flavors:[{name:"Reclaiming",desc:"Every move is oriented back toward what was lost. Return or revenge — sometimes both, sometimes she can't tell the difference."},{name:"Reinventing",desc:"Has accepted the exile. Building something new from the wreckage. The old identity is a foundation, not a destination."}]},
+  {id:65,name:"URBAN FANTASY",tag:"Magic lives in the city — and it has rent to pay",examples:"Dresden Files' Harry, Shadowhunters' Clary, Rivers of London's Peter",vibe:"Exists at the intersection of the mundane and the magical in a contemporary setting. The supernatural is real and mostly hidden and she is caught between those worlds — either as a keeper of the secret or someone who just found out it exists.",flavors:[{name:"Born Into It",desc:"Has always known. The world of magic and the world of mundane are both home and neither fully is. Navigates the overlap by instinct."},{name:"Newly Awakened",desc:"Didn't know until recently. The rules of reality she built her life around are no longer reliable. Adapting fast because she has to."}]}
+];
+</script>
+<script>
+const ethnicityVisualReference = {
+  "South Africa": {
+      faceShape: "a robust, symmetrical oval with strong, open features",
+      cheekbones: "firmly-defined, high cheekbones with frontal volume",
+      jawline: "strong, balanced jawline with a clean-cut chin",
+      nose: "straight, slightly broad nose bridge with a sturdy profile",
+      eyes: "Rich Dark Brown",
+      hair: "Level 1 jet black, Type 4C",
+      tone: "mocha",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "China": {
+      faceShape: "a classic, balanced oval with high, clear structural lines",
+      cheekbones: "prominent, wide-set cheekbones with a smooth facial plane",
+      jawline: "cleanly tapered jawline with a soft, rounded chin",
+      nose: "straight, moderate nose bridge with a softly refined base",
+      eyes: "Deep Chocolate Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Japan": {
+      faceShape: "a refined, heart-shaped oval with high structural symmetry",
+      cheekbones: "subtly sculpted, high-set cheekbones with a soft frontal plane",
+      jawline: "slim, tapered jawline with a delicate, narrow chin",
+      nose: "straight, slender nose bridge with a refined, petite tip",
+      eyes: "Deep Dark Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Korea": {
+      faceShape: "a smooth, balanced oval with high-set, soft features",
+      cheekbones: "wide, prominent cheekbones providing smooth lateral volume",
+      jawline: "softly curved, slender jawline with a narrow chin",
+      nose: "straight, refined nose bridge with a soft, rounded tip",
+      eyes: "Rich Dark Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Mongolia": {
+      faceShape: "a broad facial structure with high, broad proportions",
+      cheekbones: "exceptionally high, wide-set cheekbones providing lateral facial volume",
+      jawline: "prominent, sturdy jawline with a firm, broad profile",
+      nose: "straight, moderate nose bridge with a soft, wide base",
+      eyes: "Dark Obsidian-Brown",
+      hair: "Level 1 jet black, Type 1B",
+      tone: "honey",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Taiwan": {
+      faceShape: "a refined, heart-shaped oval with high structural symmetry",
+      cheekbones: "subtly sculpted, high-set cheekbones with a soft frontal plane",
+      jawline: "slim, tapered jawline with a delicate, narrow chin",
+      nose: "straight, slender nose bridge with a refined, petite tip",
+      eyes: "Deep Dark Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "India": {
+      faceShape: "a graceful, symmetrical oval with defined proportions",
+      cheekbones: "sculpted, high-set cheekbones with deep facial planes",
+      jawline: "clean, defined jawline with a slender chin",
+      nose: "straight, elegant nose bridge with a high, refined profile",
+      eyes: "Dark Brown",
+      hair: "Level 1 jet black, Type 2C",
+      tone: "bronze",
+      undertone: "golden",
+      complexion: "natural finish"
+  },
+  "Pakistan": {
+      faceShape: "a graceful, narrow oval with defined proportions",
+      cheekbones: "sculpted, high-set cheekbones",
+      jawline: "clean, defined jawline with a slender, structured profile",
+      nose: "straight, high-bridged nose with a classic profile",
+      eyes: "Warm Hazel",
+      hair: "Level 1 jet black, Type 2C",
+      tone: "bronze",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Indonesia": {
+      faceShape: "a soft, balanced oval with warm features",
+      cheekbones: "rounded, high-set cheekbones with gentle volume",
+      jawline: "smoothly tapered jawline with a soft, rounded chin",
+      nose: "straight, slightly wide nose bridge with a soft, flared base",
+      eyes: "Deep Chocolate Brown",
+      hair: "Level 2 natural black, Type 1B",
+      tone: "bronze",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Malaysia": {
+      faceShape: "a soft, balanced oval with warm features",
+      cheekbones: "rounded, high-set cheekbones with gentle volume",
+      jawline: "smoothly tapered jawline with a soft, rounded chin",
+      nose: "straight, slightly wide nose bridge with a soft, flared base",
+      eyes: "Deep Chocolate Brown",
+      hair: "Level 2 natural black, Type 2A",
+      tone: "bronze",
+      undertone: "warm golden",
+      complexion: "natural finish"
+  },
+  "Philippines": {
+      faceShape: "a soft, balanced oval with warm features",
+      cheekbones: "rounded, high-set cheekbones with gentle volume",
+      jawline: "smoothly tapered jawline with a soft, rounded chin",
+      nose: "straight, slightly wide nose bridge with a soft, flared base",
+      eyes: "Deep Chocolate Brown",
+      hair: "Level 2 natural black, Type 2B",
+      tone: "bronze",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Singapore": {
+      faceShape: "a refined, symmetrical oval with high structural clarity",
+      cheekbones: "high-set, prominent cheekbones with smooth facial planes",
+      jawline: "slim, tapered jawline with a narrow, clean-cut chin",
+      nose: "straight, high-bridged nose with a refined, narrow tip",
+      eyes: "Deep Dark Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Thailand": {
+      faceShape: "a soft, heart-shaped oval with warm features",
+      cheekbones: "high, rounded cheekbones with natural frontal volume",
+      jawline: "smoothly tapered jawline with a delicate chin",
+      nose: "straight, slightly wider nose bridge with a soft, rounded profile",
+      eyes: "Warm Dark Amber-Brown",
+      hair: "Level 1 jet black, Type 2A",
+      tone: "honey",
+      undertone: "warm golden",
+      complexion: "natural finish"
+  },
+  "Vietnam": {
+      faceShape: "a delicate, heart-shaped oval with soft, high-set features",
+      cheekbones: "subtly sculpted, high-set cheekbones",
+      jawline: "slim, tapered jawline with a narrow, petite chin",
+      nose: "straight, petite nose bridge with a softly rounded tip",
+      eyes: "Warm Dark Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "fair",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Tibet": {
+      faceShape: "a broad, balanced oval with strong high-altitude bone structure",
+      cheekbones: "extremely prominent, wide-set cheekbones with deep wind-burnished definition",
+      jawline: "firm, wide jawline with a strong, well-defined chin",
+      nose: "straight, moderately wide nose bridge with a rounded, sturdy tip",
+      eyes: "Deep Warm Brown",
+      hair: "Level 1 jet black, Type 1B",
+      tone: "bronze",
+      undertone: "warm",
+      complexion: "natural finish"
+  },
+  "Sherpa": {
+      faceShape: "a wide, robust oval with high-altitude adapted bone structure",
+      cheekbones: "exceptionally broad, high-set cheekbones with pronounced wind-carved definition",
+      jawline: "strong, squared jawline with a firm, broad chin",
+      nose: "straight, wide-bridged nose with a flat, broad profile adapted for thin air",
+      eyes: "Deep Black-Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "bronze",
+      undertone: "warm",
+      complexion: "natural finish"
+  },
+  "Afghanistan": {
+      faceShape: "a striking, elongated oval with clear structural lines",
+      cheekbones: "extremely high, prominent cheekbones with high definition",
+      jawline: "clean, firm jawline with a well-defined, narrow chin",
+      nose: "straight, high-bridged nose with a strong, linear profile",
+      eyes: "Amber-Brown",
+      hair: "Level 2 natural black, Type 2B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Armenia": {
+      faceShape: "a balanced, narrow oval with strong features",
+      cheekbones: "prominent, well-defined cheekbones with warm frontal volume",
+      jawline: "clean, defined jawline with a slender, structured profile",
+      nose: "straight nose bridge with a classic, high-profile tip",
+      eyes: "Rich Chocolate Brown",
+      hair: "Level 2 natural black, Type 2C",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Georgia": {
+      faceShape: "a symmetrical oval with high structural lines",
+      cheekbones: "sculpted, high-set cheekbones with deep facial planes",
+      jawline: "firmly-sculpted, clean jawline with a narrow profile",
+      nose: "straight, high-bridged nose with a strong, linear profile",
+      eyes: "Deep Brown",
+      hair: "Level 2 raven black, Type 2B",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Kazakhstan": {
+      faceShape: "a wide oval with high structural symmetry",
+      cheekbones: "extremely high, prominent cheekbones with broad lateral volume",
+      jawline: "clean, firm jawline with a well-defined, strong chin",
+      nose: "straight, moderate nose bridge with a refined, soft tip",
+      eyes: "Almond Dark Brown",
+      hair: "Level 2 natural black, Type 1B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Arctic-Scandinavian": {
+      faceShape: "a narrow oval with high-contrast symmetrical features",
+      cheekbones: "finely-sculpted, high cheekbones with a smooth, clear facial plane",
+      jawline: "slim, defined jawline with a narrow, petite chin",
+      nose: "thin, elegant nose bridge with a refined, sharp tip",
+      eyes: "Pale Blue",
+      hair: "Level 10 white blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Denmark": {
+      faceShape: "a classic Nordic oval with clean, symmetrical lines",
+      cheekbones: "subtly sculpted, high-set cheekbones",
+      jawline: "balanced, narrow jawline with a clean profile",
+      nose: "straight, high-bridged nose with a sharp, refined profile",
+      eyes: "Clear Blue",
+      hair: "Level 9 pale blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Estonia": {
+      faceShape: "a refined, symmetrical oval with high structural clarity",
+      cheekbones: "sharp, laterally-prominent cheekbones",
+      jawline: "slim, defined jawline with a narrow chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Cool Grey",
+      hair: "Level 8 ash blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Finland": {
+      faceShape: "a soft, clear oval with symmetrical features",
+      cheekbones: "high, frontally-emphasized cheekbones",
+      jawline: "smooth, rounded jawline with a delicate chin",
+      nose: "straight, petite nose with a soft bridge",
+      eyes: "Bright Blue",
+      hair: "Level 9 platinum blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool",
+      complexion: "natural finish"
+  },
+  "Iceland": {
+      faceShape: "a robust Nordic oval with a strong forehead",
+      cheekbones: "firmly defined, high cheekbones with high definition",
+      jawline: "structured jawline with a soft, rounded chin",
+      nose: "straight, prominent nose with a sturdy, narrow bridge",
+      eyes: "Ice Blue",
+      hair: "Level 10 platinum blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool",
+      complexion: "natural finish"
+  },
+  "Latvia": {
+      faceShape: "a balanced oval with a high, clear forehead",
+      cheekbones: "prominent, high-set cheekbones",
+      jawline: "firm, well-defined jawline",
+      nose: "straight, prominent nose bridge with a structured profile",
+      eyes: "Clear Blue",
+      hair: "Level 8 honey blonde, Type 1B",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Lithuania": {
+      faceShape: "a soft, balanced oval with high-set, symmetrical features",
+      cheekbones: "prominent, rounded cheekbones",
+      jawline: "smoothly tapered jawline with a soft chin",
+      nose: "straight, moderate nose bridge with a soft, refined tip",
+      eyes: "Soft Green",
+      hair: "Level 7 honey blonde, Type 2B",
+      tone: "fair",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Norway": {
+      faceShape: "a robust Nordic oval with a strong, wide forehead",
+      cheekbones: "firmly defined, high cheekbones",
+      jawline: "structured jawline with a clean, well-defined profile",
+      nose: "straight, prominent nose with a sturdy, narrow base",
+      eyes: "Deep Blue",
+      hair: "Level 9 ash blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Sweden": {
+      faceShape: "a symmetrical, narrow oval with clean structural lines",
+      cheekbones: "finely-sculpted, high-set cheekbones",
+      jawline: "slim, defined jawline with a narrow chin",
+      nose: "straight, slender nose bridge with a refined, sharp tip",
+      eyes: "Clear Blue",
+      hair: "Level 10 platinum blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool",
+      complexion: "natural finish"
+  },
+  "Viking-Highland": {
+      faceShape: "a rugged, elongated oval with a strong, low brow",
+      cheekbones: "exceptionally sharp, high-set cheekbones with deep structural definition",
+      jawline: "sturdy, square-cut jawline with a prominent, clean profile",
+      nose: "straight, high-bridged nose with a sharp, linear profile",
+      eyes: "Ice Blue",
+      hair: "Level 10 platinum blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool",
+      complexion: "natural finish"
+  },
+  "Belgium": {
+      faceShape: "a balanced, symmetrical oval with soft features",
+      cheekbones: "subtly defined cheekbones with gentle volume",
+      jawline: "smoothly tapered jawline with a rounded chin",
+      nose: "straight, moderate nose bridge with a refined tip",
+      eyes: "Grey-Blue",
+      hair: "Level 7 light brown, Type 2B",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "France": {
+      faceShape: "a high-set oval with delicate structural symmetry",
+      cheekbones: "sculpted, prominent high cheekbones",
+      jawline: "slim, refined jawline with a narrow chin",
+      nose: "thin, elegant nose bridge with a slight tip",
+      eyes: "Deep Hazel",
+      hair: "Level 6 light brown, Type 2B",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Germany": {
+      faceShape: "a strong, symmetrical oval with a structured forehead",
+      cheekbones: "firmly-defined cheekbones with mid-face volume",
+      jawline: "sturdy, balanced jawline with a clean-cut chin",
+      nose: "straight, prominent nose bridge with a structured base",
+      eyes: "Clear Blue",
+      hair: "Level 7 dark blonde, Type 1B",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Gibraltar": {
+      faceShape: "a balanced, symmetrical oval with clean lines",
+      cheekbones: "subtly sculpted, high-set cheekbones",
+      jawline: "cleanly tapered jawline with a soft, rounded chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Cool Blue",
+      hair: "Level 7 dark blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Ireland": {
+      faceShape: "a soft, balanced oval with high structural symmetry",
+      cheekbones: "subtle, high-set cheekbones with a natural lift",
+      jawline: "smoothly tapered jawline with a rounded, petite chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Clear Green",
+      hair: "Level 8 ash blonde, Type 2B",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Netherlands": {
+      faceShape: "a robust oval with a strong, wide forehead",
+      cheekbones: "firmly defined, high cheekbones",
+      jawline: "structured jawline with a clean, well-defined profile",
+      nose: "straight, prominent nose bridge with a sturdy, narrow base",
+      eyes: "Bright Grey",
+      hair: "Level 9 ash blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Portugal": {
+      faceShape: "a graceful, slightly narrow oval with high symmetry",
+      cheekbones: "finely-sculpted, high-set cheekbones",
+      jawline: "clean, defined jawline with a structured profile",
+      nose: "straight nose bridge with a refined, linear profile",
+      eyes: "Deep Brown",
+      hair: "Level 3 warm espresso, Type 2C",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Scotland": {
+      faceShape: "a rugged, angular oval with strong features",
+      cheekbones: "sharp, high-set cheekbones with deep structural definition",
+      jawline: "sturdy, square-cut jawline with a prominent chin",
+      nose: "straight, high-bridged nose with a sharp, linear profile",
+      eyes: "Cool Blue",
+      hair: "Level 7 dark blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Switzerland": {
+      faceShape: "a refined, symmetrical oval with clean structural lines",
+      cheekbones: "subtly sculpted, high-set cheekbones",
+      jawline: "slim, defined jawline with a narrow, clean-cut chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Cool Blue",
+      hair: "Level 7 neutral ash brown, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "United Kingdom": {
+      faceShape: "a classic, slightly elongated oval with a soft forehead",
+      cheekbones: "subtle, refined cheekbone definition",
+      jawline: "gently tapered jawline with a soft, rounded chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Cool Blue",
+      hair: "Level 7 dark blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Albania": {
+      faceShape: "a symmetrical oval with high structural prominence",
+      cheekbones: "sharp, high-set cheekbones with significant definition",
+      jawline: "firm, well-defined jawline with a narrow profile",
+      nose: "straight, high-bridged nose with a strong, linear profile",
+      eyes: "Deep Brown",
+      hair: "Level 2 natural black, Type 2B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Croatia": {
+      faceShape: "a refined, symmetrical oval with high structural definition",
+      cheekbones: "sculpted, high-set cheekbones with a clear lateral profile",
+      jawline: "clean, firmly-tapered jawline with a narrow, strong chin",
+      nose: "straight, slender nose bridge with a high-set, refined profile",
+      eyes: "Cool Blue",
+      hair: "Level 6 light brown, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Greece": {
+      faceShape: "a classic, balanced oval with symmetrical proportions",
+      cheekbones: "prominent, well-defined cheekbones with clear facial planes",
+      jawline: "strong, clean jawline with a sharp profile",
+      nose: "straight, high nose bridge with a balanced tip",
+      eyes: "Warm Brown",
+      hair: "Level 4 dark brown, Type 2B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Italy": {
+      faceShape: "a soft, balanced oval with warm features",
+      cheekbones: "rounded, high-set cheekbones with gentle volume",
+      jawline: "smoothly tapered jawline with a soft chin",
+      nose: "straight nose bridge with a classic, refined profile",
+      eyes: "Warm Brown",
+      hair: "Level 4 dark brown, Type 2C",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Serbia": {
+      faceShape: "a symmetrical oval with high structural prominence",
+      cheekbones: "sharp, high-set cheekbones with significant definition",
+      jawline: "firm, well-defined jawline with a narrow, refined profile",
+      nose: "straight, high-bridged nose with a strong, linear profile",
+      eyes: "Deep Brown",
+      hair: "Level 3 darkest brown, Type 1B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Slovenia": {
+      faceShape: "a soft, balanced oval with high-set, symmetrical features",
+      cheekbones: "prominent, rounded cheekbones with smooth frontal volume",
+      jawline: "smoothly tapered jawline with a delicate, rounded chin",
+      nose: "straight, moderate nose bridge with a soft, refined tip",
+      eyes: "Clear Blue",
+      hair: "Level 8 ash blonde, Type 1B",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Spain": {
+      faceShape: "a graceful, slightly narrow oval with high symmetry",
+      cheekbones: "finely-sculpted, high cheekbones",
+      jawline: "clean, defined jawline with a slender chin",
+      nose: "straight, elegant nose bridge with a thin profile",
+      eyes: "Warm Brown",
+      hair: "Level 3 darkest brown, Type 2B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Austria": {
+      faceShape: "a refined, symmetrical oval with high structural clarity",
+      cheekbones: "subtly sculpted, high-set cheekbones",
+      jawline: "clean, defined jawline with a narrow chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Cool Blue",
+      hair: "Level 7 dark blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Belarus": {
+      faceShape: "a soft, balanced oval with high-set features",
+      cheekbones: "prominent, rounded cheekbones with smooth frontal volume",
+      jawline: "smoothly tapered jawline with a delicate, rounded chin",
+      nose: "straight, moderate nose bridge with a soft, refined tip",
+      eyes: "Clear Blue",
+      hair: "Level 8 ash blonde, Type 1A",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Bulgaria": {
+      faceShape: "a strong, balanced oval with defined structural features",
+      cheekbones: "firmly-defined, high cheekbones with a smooth facial plane",
+      jawline: "sturdy, clean jawline with a well-defined chin",
+      nose: "straight, prominent nose bridge with a structured profile",
+      eyes: "Dark Amber",
+      hair: "Level 2 natural black, Type 2C",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Czech Republic": {
+      faceShape: "a refined, symmetrical oval with high structural definition",
+      cheekbones: "sculpted, high-set cheekbones",
+      jawline: "clean, firmly-tapered jawline with a narrow chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Hazel-Green",
+      hair: "Level 6 light brown, Type 2A",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Hungary": {
+      faceShape: "a balanced, narrow oval with strong structural lines",
+      cheekbones: "sharp, prominent cheekbones with high definition",
+      jawline: "firm, well-defined jawline with a narrow profile",
+      nose: "straight, high-bridged nose with a linear profile",
+      eyes: "Deep Brown",
+      hair: "Level 4 dark brown, Type 2B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Poland": {
+      faceShape: "a balanced oval with a high, clear forehead",
+      cheekbones: "prominent, high-set cheekbones with clear facial planes",
+      jawline: "cleanly tapered jawline",
+      nose: "straight, finely-modeled nose with a narrow bridge",
+      eyes: "Clear Blue",
+      hair: "Level 8 ash blonde, Type 1B",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Romania": {
+      faceShape: "a classic, slightly narrow oval with expressive structural lines",
+      cheekbones: "finely-sculpted, high-set cheekbones",
+      jawline: "clean, defined jawline with a narrow profile",
+      nose: "straight, elegant nose bridge with a classic, high-profile tip",
+      eyes: "Deep Brown",
+      hair: "Level 3 darkest brown, Type 2B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Russia": {
+      faceShape: "a refined, narrow oval with high structural symmetry",
+      cheekbones: "sharp, laterally-prominent cheekbones",
+      jawline: "firm, well-defined jawline",
+      nose: "straight, slightly elongated nose with a refined tip",
+      eyes: "Cool Grey",
+      hair: "Level 7 dark blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Slovakia": {
+      faceShape: "a balanced oval with a high, clear forehead",
+      cheekbones: "prominent, high-set cheekbones",
+      jawline: "firm, well-defined jawline with a clean profile",
+      nose: "straight, prominent nose bridge with a structured profile",
+      eyes: "Clear Blue",
+      hair: "Level 7 dark blonde, Type 1B",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Ukraine": {
+      faceShape: "a soft, balanced oval with high-set, symmetrical features",
+      cheekbones: "prominent, rounded cheekbones with smooth frontal volume",
+      jawline: "smoothly tapered jawline with a delicate, rounded chin",
+      nose: "straight, moderate nose bridge with a soft, refined tip",
+      eyes: "Clear Green",
+      hair: "Level 7 dark blonde, Type 1A",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Iran": {
+      faceShape: "a refined, narrow oval with high structural symmetry",
+      cheekbones: "sculpted, high-set cheekbones with deep facial planes",
+      jawline: "slim, defined jawline with a narrow, tapered chin",
+      nose: "straight, high-bridged nose with a thin, refined profile",
+      eyes: "Deep Dark Brown",
+      hair: "Level 2 natural black, Type 2B",
+      tone: "fair",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Iraq": {
+      faceShape: "a balanced oval with high, clear structural lines",
+      cheekbones: "prominent, wide-set cheekbones",
+      jawline: "clean, defined jawline with a sturdy profile",
+      nose: "straight, prominent nose bridge with a structured base",
+      eyes: "Deep Dark Brown",
+      hair: "Level 1 jet black, Type 2C",
+      tone: "honey",
+      undertone: "golden",
+      complexion: "natural finish"
+  },
+  "Israel": {
+      faceShape: "a balanced, symmetrical oval with strong lines",
+      cheekbones: "prominent, high-set cheekbones",
+      jawline: "clean, defined jawline with a structured profile",
+      nose: "straight nose bridge with a classic, refined tip",
+      eyes: "Honey-Brown",
+      hair: "Level 3 darkest brown, Type 2C",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Lebanon": {
+      faceShape: "a refined, narrow oval with high structural symmetry",
+      cheekbones: "sculpted, high-set cheekbones with deep facial planes",
+      jawline: "slim, defined jawline with a narrow, tapered chin",
+      nose: "straight, high-bridged nose with a thin, refined profile",
+      eyes: "Warm Hazel",
+      hair: "Level 3 darkest brown, Type 2B",
+      tone: "fair",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Turkey": {
+      faceShape: "a balanced, symmetrical oval with high structural clarity",
+      cheekbones: "prominent, high-set cheekbones",
+      jawline: "firm, well-defined jawline with a narrow profile",
+      nose: "straight, high-bridged nose with a linear profile",
+      eyes: "Hazel-Brown",
+      hair: "Level 4 dark brown, Type 2A",
+      tone: "fair",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "Canada": {
+      faceShape: "a balanced, symmetrical oval with soft features",
+      cheekbones: "subtly defined cheekbones with gentle volume",
+      jawline: "smoothly tapered jawline with a rounded chin",
+      nose: "straight, moderate nose bridge with a refined tip",
+      eyes: "Cool Blue",
+      hair: "Level 7 dark blonde, Type 1C",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Greenland": {
+      faceShape: "a wide oval with high, powerful structural lines",
+      cheekbones: "exceptionally high, wide-set cheekbones with frontal volume",
+      jawline: "strong, balanced jawline with a firm, broad chin",
+      nose: "straight, moderate nose bridge with a softly rounded base",
+      eyes: "Deep Dark Brown",
+      hair: "Level 1 jet black, Type 1A",
+      tone: "fair",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Mexico": {
+      faceShape: "a soft, rounded oval with warm features",
+      cheekbones: "high, rounded cheekbones with significant frontal volume",
+      jawline: "smooth, gently curved jawline with a soft chin",
+      nose: "straight, slightly wider nose bridge with a soft, rounded tip",
+      eyes: "Warm Dark Brown",
+      hair: "Level 2 natural black, Type 2C",
+      tone: "honey",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Native American": {
+      faceShape: "a wide oval with high structural symmetry",
+      cheekbones: "extremely high, prominent cheekbones with clear facial planes",
+      jawline: "clean, firm jawline with a well-defined, strong chin",
+      nose: "straight, high-bridged nose with a sharp profile",
+      eyes: "Deep Chocolate Brown",
+      hair: "Level 1 jet black, Type 1B",
+      tone: "bronze",
+      undertone: "golden",
+      complexion: "natural finish"
+  },
+  "USA": {
+      faceShape: "a balanced, symmetrical oval with soft, open features",
+      cheekbones: "subtly defined cheekbones with gentle forward-facing volume",
+      jawline: "cleanly defined jawline with a softly rounded chin",
+      nose: "straight, refined nose bridge with a moderate, balanced tip",
+      eyes: "Cool Blue",
+      hair: "Level 7 dark blonde, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Cuba": {
+      faceShape: "a graceful, symmetrical oval with high structural clarity",
+      cheekbones: "prominent, high-set cheekbones with a smooth facial plane",
+      jawline: "clean, defined jawline with a slender, refined chin",
+      nose: "straight, elegant nose bridge with a classic profile",
+      eyes: "Warm Dark Brown",
+      hair: "Level 2 natural black, Type 2C",
+      tone: "honey",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Puerto Rico": {
+      faceShape: "a refined, high-set oval with delicate symmetry",
+      cheekbones: "sculpted, prominent high cheekbones",
+      jawline: "slim, refined jawline with a narrow chin",
+      nose: "straight, elegant nose bridge with a classic profile",
+      eyes: "Warm Amber-Brown",
+      hair: "Level 4 dark brown, Type 2C",
+      tone: "honey",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Argentina": {
+      faceShape: "a refined, narrow oval with high structural symmetry",
+      cheekbones: "subtly sculpted, high-set cheekbones",
+      jawline: "slim, defined jawline with a narrow, clean chin",
+      nose: "straight, elegant nose bridge with a refined, narrow profile",
+      eyes: "Honey-Brown",
+      hair: "Level 4 medium ash brown, Type 2A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Brazil": {
+      faceShape: "a vibrant, balanced oval with high structural symmetry",
+      cheekbones: "sculpted, high-set cheekbones with a natural lift",
+      jawline: "slim, defined jawline with a clean, narrow chin",
+      nose: "straight, elegant nose bridge with a refined, soft tip",
+      eyes: "Honey-Brown",
+      hair: "Level 3 darkest brown, Type 3A",
+      tone: "bronze",
+      undertone: "warm golden",
+      complexion: "natural finish"
+  },
+  "Colombia": {
+      faceShape: "a graceful, slightly heart-shaped oval with soft lines",
+      cheekbones: "high, prominent cheekbones with a smooth, clear facial plane",
+      jawline: "softly tapered jawline with a delicate, rounded chin",
+      nose: "straight, narrow nose bridge with a petite, refined profile",
+      eyes: "Deep Chocolate Brown",
+      hair: "Level 2 darkest brown, Type 2B",
+      tone: "sand",
+      undertone: "warm-neutral",
+      complexion: "natural finish"
+  },
+  "Venezuela": {
+      faceShape: "a vibrant, balanced oval with high structural symmetry",
+      cheekbones: "sculpted, high-set cheekbones with a natural lift",
+      jawline: "slim, defined jawline with a clean, narrow chin",
+      nose: "straight, elegant nose bridge with a refined, soft tip",
+      eyes: "Warm Amber-Brown",
+      hair: "Level 3 darkest brown, Type 3A",
+      tone: "bronze",
+      undertone: "warm golden",
+      complexion: "natural finish"
+  },
+  "Australia": {
+      faceShape: "a balanced, narrow oval with clean lines",
+      cheekbones: "subtly defined, high-set cheekbones",
+      jawline: "cleanly tapered jawline with a soft, rounded chin",
+      nose: "straight, slender nose bridge with a refined tip",
+      eyes: "Bright Blue",
+      hair: "Level 8 ash blonde, Type 2A",
+      tone: "sand",
+      undertone: "neutral",
+      complexion: "natural finish"
+  },
+  "New Zealand": {
+      faceShape: "a refined, symmetrical oval with clean Nordic-influenced lines",
+      cheekbones: "subtly sculpted, high-set cheekbones",
+      jawline: "balanced, narrow jawline with a clean profile",
+      nose: "straight, high-bridged nose with a sharp profile",
+      eyes: "Clear Blue",
+      hair: "Level 7 dark blonde, Type 1A",
+      tone: "fair",
+      undertone: "cool-neutral",
+      complexion: "natural finish"
+  },
+  "Samoa": {
+      faceShape: "a strong, broad facial structure with balanced proportions",
+      cheekbones: "high, wide cheekbones providing lateral facial volume",
+      jawline: "prominent, sturdy jawline with a firm, broad chin",
+      nose: "broad nose bridge with a softly rounded, wide base",
+      eyes: "Deep Obsidian Brown",
+      hair: "Level 1 jet black, Type 3A",
+      tone: "bronze",
+      undertone: "warm",
+      complexion: "natural finish"
+  },
+  "Hawaii": {
+      faceShape: "a strong, broad facial structure with balanced proportions",
+      cheekbones: "high, wide cheekbones providing lateral facial volume",
+      jawline: "prominent, sturdy jawline with a firm, broad chin",
+      nose: "broad nose bridge with a softly rounded, wide base",
+      eyes: "Deep Brown",
+      hair: "Level 1 natural black, Type 2C",
+      tone: "bronze",
+      undertone: "warm",
+      complexion: "natural finish"
+  },
+};
+// Skin tone blend — numeric math from Master Reference
+// Tone scale: 0=fair 1=sand 2=honey 3=caramel 4=bronze 5=mocha 6=deep brown 7=rich deep brown 8=ebony
+// Undertone scale: 0=cool 1=cool-neutral 2=neutral 3=warm pink 4=warm-neutral 5=warm 6=golden 7=warm golden 8=bronze
+const TONE_ID = {
+  'fair':0,'sand':1,'honey':2,'caramel':3,'bronze':4,
+  'mocha':5,'deep brown':6,'rich deep brown':7,'ebony':8
+};
+const TONE_LABEL = ['fair','sand','honey','caramel','bronze','mocha','deep brown','rich deep brown','ebony'];
+const UNDERTONE_ID = {
+  'cool':0,'cool-neutral':1,'neutral':2,'warm pink':3,'warm-neutral':4,
+  'warm':5,'golden':6,'warm golden':7,'bronze':8
+};
+const UNDERTONE_LABEL = ['cool','cool-neutral','neutral','warm pink','warm-neutral','warm','golden','warm golden','bronze'];
+function blendSkin(dom, sec, db) {
+  const d = db[dom]; const s = db[sec];
+  if(!d || !s) return { tone: d?.tone||'fair', undertone: d?.undertone||'neutral' };
+  const tD = TONE_ID[d.tone] ?? 0;
+  const tS = TONE_ID[s.tone] ?? 0;
+  const uD = UNDERTONE_ID[d.undertone] ?? 2;
+  const uS = UNDERTONE_ID[s.undertone] ?? 2;
+  const blendedToneId = Math.floor((tD + tS) / 2);
+  const blendedUndertoneId = Math.floor((uD + uS) / 2);
+  return {
+    tone: TONE_LABEL[blendedToneId] || d.tone,
+    undertone: UNDERTONE_LABEL[blendedUndertoneId] || d.undertone
+  };
+}
+
+function blendEthnicity(dominant, secondary, lookupTable) {
+  // Legacy stub — blend logic now handled by blendSkin()
+  const dData = lookupTable[dominant];
+  return dData || {};
+}
+
+
+// ── TIER SELECTION ────────────────────────────────────────────────────────────
+function selectTier(type, tier) {
+  if(type==='bio') {
+    bioTier = tier;
+    el('bioStandard').checked = tier==='standard';
+    el('bioExtended').checked = tier==='extended';
+    el('bioDeep').checked     = tier==='deep';
+    ['standard','extended','deep'].forEach(t => {
+      el('bioOpt-'+t).classList.toggle('selected', t===tier);
+    });
+  } else {
+    memTier = tier;
+    el('memStandard').checked = tier==='standard';
+    el('memExtended').checked = tier==='extended';
+    el('memDeep').checked     = tier==='deep';
+    ['standard','extended','deep'].forEach(t => {
+      el('memOpt-'+t).classList.toggle('selected', t===tier);
+    });
+  }
+}
+
+// ── ARCHETYPE SEARCH DROPDOWN ─────────────────────────────────────────────────
+function archSearch() {
+  const inp = document.getElementById('archetypeSearch');
+  const pred = document.getElementById('archPredict');
+  const q = inp.value.trim().toLowerCase();
+  if(!q) { pred.classList.remove('show'); pred.innerHTML=''; return; }
+  const matches = ARCHETYPES.filter(a =>
+    a.name.toLowerCase().includes(q) ||
+    (a.tag && a.tag.toLowerCase().includes(q))
+  ).slice(0,10);
+  if(!matches.length) { pred.classList.remove('show'); return; }
+  pred.innerHTML = matches.map(a =>
+    `<div class="eth-predict-item" onclick="archPick(${a.id})">${a.name}<span>${a.tag||''}</span></div>`
+  ).join('');
+  pred.classList.add('show');
+}
+
+function archPick(id) {
+  const a = ARCHETYPES.find(x => x.id === id);
+  if(!a) return;
+  document.getElementById('archetypeSearch').value = a.name;
+  document.getElementById('archLabel').textContent = a.tag || '';
+  document.getElementById('archPredict').classList.remove('show');
+  document.getElementById('archPredict').innerHTML = '';
+  document.getElementById('archAccordion').classList.remove('show');
+  document.getElementById('archMenuBtn').classList.remove('open');
+  onArchetypeSelect(id);
+}
+
+function archToggle() {
+  const acc = document.getElementById('archAccordion');
+  const btn = document.getElementById('archMenuBtn');
+  const isOpen = acc.classList.contains('show');
+  if(!isOpen && !acc.dataset.built) archBuildAccordion();
+  acc.classList.toggle('show', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+function archBuildAccordion() {
+  const acc = document.getElementById('archAccordion');
+  // Group into rough categories
+  const groups = {
+    'ENNEAGRAM CORE (1–9)': ARCHETYPES.filter(a => a.id >= 1 && a.id <= 9),
+    'ARCHETYPES (10–35)': ARCHETYPES.filter(a => a.id >= 10 && a.id <= 35),
+    'EXTENDED (36–48)': ARCHETYPES.filter(a => a.id >= 36 && a.id <= 48),
+    'GENRE & WORLD (49–58)': ARCHETYPES.filter(a => a.id >= 49 && a.id <= 58),
+    'CHARACTER TYPES (59–65)': ARCHETYPES.filter(a => a.id >= 59 && a.id <= 65),
+  };
+  let html = '';
+  for(const [group, items] of Object.entries(groups)) {
+    if(!items.length) continue;
+    html += `<div class="eth-region-head" onclick="this.classList.toggle('open')">${group}<span>▶</span></div>` +
+      '<div class="eth-region-countries">' +
+      items.map(a =>
+        `<div class="eth-country" data-id="${a.id}" onclick="archPick(${a.id})">${a.name}</div>`
+      ).join('') +
+      '</div>';
+  }
+  acc.innerHTML = html;
+  acc.dataset.built = '1';
+}
+
+function archReset() {
+  document.getElementById('archetypeSearch').value = '';
+  document.getElementById('archLabel').textContent = '';
+  document.getElementById('archPredict').classList.remove('show');
+  document.getElementById('archPredict').innerHTML = '';
+  document.getElementById('archAccordion').classList.remove('show');
+  document.getElementById('archAccordion').dataset.built = '';
+  document.getElementById('archMenuBtn').classList.remove('open');
+  document.querySelectorAll('#archAccordion .eth-country').forEach(el => el.classList.remove('active'));
+}
+
+// Close predict on outside click
+document.addEventListener('click', function(e) {
+  const box = document.getElementById('archBox');
+  if(box && !box.contains(e.target)) {
+    document.getElementById('archPredict').classList.remove('show');
+  }
+});
+
+
+function applyArchetype(a) {
+  currentArchetype=a; currentFlavor=null;
+  document.getElementById('archetypeSearch').value = a.name;
+  document.getElementById('archLabel').textContent = a.tag || '';
+  document.querySelectorAll('#archAccordion .eth-country').forEach(el => {
+    el.classList.toggle('active', +el.dataset.id === a.id);
+  });
+  updateArchetypeUI();
+}
+
+function onArchetypeSelect(id) {
+  if(!id){
+    currentArchetype=null;currentFlavor=null;
+    manualArchetype=false;updateArchetypeUI();
+    return;
+  }
+  manualArchetype=true;
+  const a=ARCHETYPES.find(x=>x.id===id);
+  if(!a) return;
+  applyArchetype(a);
+}
+
+function updateArchetypeUI() {
+  const a=currentArchetype;
+  if(!a){hide('archetypeCard');hide('flavorSection');return;}
+  show('archetypeCard');
+  setText('archetypeTag',a.tag);
+  setText('archetypeVibe',a.vibe);
+  el('archetypeExamples').innerHTML=`<span style="color:#2e2e2e">eg. </span>${escH(a.examples)}`;
+  if(a.flavors){show('flavorSection');updateFlavorBtns();}
+  else hide('flavorSection');
+}
+
+function updateFlavorBtns() {
+  if(!currentArchetype?.flavors) return;
+  setHTML('flavorBtns',currentArchetype.flavors.map((f,i)=>`
+    <button class="flavor-btn ${currentFlavor?.name===f.name?'active':''}" onclick="pickFlavor(${i})">
+      <div style="font-size:10px;letter-spacing:.08em;color:${currentFlavor?.name===f.name?'#e09030':'#888'};margin-bottom:2px">${escH(f.name)}</div>
+      <div style="font-family:Georgia,serif;font-size:11px;color:${currentFlavor?.name===f.name?'#b07828':'#484848'};font-style:italic;line-height:1.5">${escH(f.desc)}</div>
+    </button>`).join(''));
+}
+
+function pickFlavor(idx) {
+  if(!currentArchetype?.flavors) return;
+  const f=currentArchetype.flavors[idx];
+  currentFlavor=(currentFlavor?.name===f.name)?null:f;
+  updateFlavorBtns();
+}
+
+
+// ── COPY ──────────────────────────────────────────────────────────────────────
+function doCopy(text,btnId){
+  const btn=el(btnId); const orig=btn.textContent;
+  const done=()=>{btn.classList.add('ok');btn.textContent='✓  COPIED';setTimeout(()=>{btn.classList.remove('ok');btn.textContent=orig;},2200);};
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done).catch(()=>{fbCopy(text);done();});
+  else{fbCopy(text);done();}
+}
+function fbCopy(text){try{const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}catch(e){}}
+function copyFull(btnId){doCopy(forgeOutput,btnId);}
+
+function extractSection(raw,label){
+  // Handle both plain labels and # markdown headers
+  const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re=new RegExp('(?:#+\\s*)?'+escaped+'\\s*\\n([\\s\\S]*?)(?=\\n(?:#+\\s*)?[A-Z][A-Z ]+\\n|$)');
+  const m=raw.match(re);
+  return m?m[1].trim():'';
+}
+
+function copySection(btn){
+  const text=btn.dataset.text; const orig=btn.textContent;
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent=orig,1800);}).catch(()=>{fbCopy(text);btn.textContent='✓';setTimeout(()=>btn.textContent=orig,1800);});
+  else{fbCopy(text);btn.textContent='✓';setTimeout(()=>btn.textContent=orig,1800);}
+}
+
+function copyObsidian(btnId){
+  if(!forgeOutput) return;
+  const raw=forgeOutput;
+  const summaryCard  =extractSection(raw,'SUMMARY CARD');
+  const core         =extractSection(raw,'CORE');
+  const biography    =extractSection(raw,'CHARACTER BIOGRAPHY');
+  const keyMemories  =extractSection(raw,'KEY MEMORIES');
+  const greetingA    =extractSection(raw,'KINDROID GREETING A');
+  const greetingB    =extractSection(raw,'KINDROID GREETING B');
+  const greetingC    =extractSection(raw,'KINDROID GREETING C');
+  const examples     =extractSection(raw,'KINDROID EXAMPLE MESSAGES');
+  const avatar       =extractSection(raw,'AVATAR PROMPT');
+
+
+  const backstoryBlock=[
+    summaryCard,
+    core&&'CORE\n'+core,
+    biography&&'CHARACTER BIOGRAPHY\n'+biography,
+  ].filter(Boolean).join('\n\n');
+  // Build session inputs block for Obsidian
+  let sessionBlock = '';
+  if(window._sessionInputs) {
+    const si = window._sessionInputs;
+    const flavorLine = si.flavor ? '\nFlavor: '+si.flavor : '';
+    const expandedSeed = extractSection(raw, 'EXPANDED SEED');
+    sessionBlock = [
+      '###### **SESSION INPUTS**',
+      '```',
+      'Generated: '+si.timestamp,
+      'Generation Time: '+(si.genTime||'—'),
+      'Archetype: '+si.archetype+flavorLine,
+      'Bio Tier: '+si.bioTier+' | Memory Tier: '+si.memTier,
+      '',
+      'SEED:',
+      si.seed||'(none)',
+      '',
+      'EXPANDED SEED:',
+      expandedSeed||'(none)',
+      '',
+      'VIBE:',
+      si.vibe||'(none)',
+      '',
+      'RELATIONSHIP TYPE:',
+      si.relType||'(none)',
+      '',
+      'WHERE WE MET:',
+      si.whereMet||'(none)',
+      '```',
+    ].join('\n');
+  }
+
+  const md=[
+    '> [!tip] Character Card','> '+summaryCard,
+    '![[LEAVE AS PLACEHOLDER.jpg]]','','',
+    '###### **BACKSTORY**','```',backstoryBlock,'```','','---','',
+    '###### **KEY MEMORIES**','```',keyMemories,'```','','---','',
+    '###### **KINDROID GREETING A**','```',greetingA,'```','','---','',
+    '###### **KINDROID GREETING B**','```',greetingB,'```','','---','',
+    '###### **KINDROID GREETING C**','```',greetingC,'```','','---','',
+    '###### **EXAMPLE MESSAGES**','```',examples,'```','','---','',
+    '###### **AVATAR PROMPT**','```',avatar,'```','','---','',
+    sessionBlock,
+  ].filter(Boolean).join('\n');
+  doCopy(md,btnId);
+}
+
+function emailObsidian(){
+  if(!forgeOutput) return;
+  const raw=forgeOutput;
+  const summaryCard=extractSection(raw,'SUMMARY CARD');
+  const core=extractSection(raw,'CORE');
+  const biography=extractSection(raw,'CHARACTER BIOGRAPHY');
+  const keyMemories=extractSection(raw,'KEY MEMORIES');
+  const greetingA=extractSection(raw,'KINDROID GREETING A');
+  const greetingB=extractSection(raw,'KINDROID GREETING B');
+  const greetingC=extractSection(raw,'KINDROID GREETING C');
+  const examples=extractSection(raw,'KINDROID EXAMPLE MESSAGES');
+  const avatar=extractSection(raw,'AVATAR PROMPT');
+  const expandedSeed=extractSection(raw,'EXPANDED SEED');
+  const backstoryBlock=[summaryCard,core&&'CORE\n'+core,biography&&'CHARACTER BIOGRAPHY\n'+biography].filter(Boolean).join('\n\n');
+  const now=new Date();
+  const timestamp=now.toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'})+' '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const seed=el('seedInput').value.trim();
+  const vibe=el('vibeInput').value.trim();
+  const relType=el('relTypeInput').value.trim();
+  const whereMet=el('whereMetInput').value.trim();
+  const archName=currentArchetype?currentArchetype.name:'—';
+  const flavor=currentFlavor?currentFlavor.name:'—';
+  const sessionBlock=['###### **SESSION INPUTS**','```','Generated: '+timestamp,'Archetype: '+archName+(flavor!=='—'?'\nFlavor: '+flavor:''),'Bio Tier: '+bioTier.toUpperCase()+' | Memory Tier: '+memTier.toUpperCase(),'','SEED:',seed||'(none)','','EXPANDED SEED:',expandedSeed||'(none)','','VIBE:',vibe||'(none)','','RELATIONSHIP TYPE:',relType||'(none)','','WHERE WE MET:',whereMet||'(none)','```'].join('\n');
+  const md=['> [!tip] Character Card','> '+summaryCard,'![[LEAVE AS PLACEHOLDER.jpg]]','','','###### **BACKSTORY**','```',backstoryBlock,'```','','---','','###### **KEY MEMORIES**','```',keyMemories,'```','','---','','###### **KINDROID GREETING A**','```',greetingA,'```','','---','','###### **KINDROID GREETING B**','```',greetingB,'```','','---','','###### **KINDROID GREETING C**','```',greetingC,'```','','---','','###### **EXAMPLE MESSAGES**','```',examples,'```','','---','','###### **AVATAR PROMPT**','```',avatar,'```','','---','',sessionBlock].filter(Boolean).join('\n');
+  const charName=summaryCard.split(',')[0].trim()||'Character';
+  const fileName=charName.replace(/[^a-zA-Z0-9]/g,'_')+'.md';
+  const file=new File([md],fileName,{type:'text/markdown'});
+  // Mobile: use Web Share API with file
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:charName,text:'Character profile: '+charName}).catch(()=>{});
+  } else {
+    // Desktop: download the file
+    const url=URL.createObjectURL(file);
+    const a=document.createElement('a');
+    a.href=url;a.download=fileName;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  }
+}
+
+function cleanSysTags(raw){
+  raw=raw.replace(/#+\s*<SYS>/g,'<SYS>');
+  raw=raw.replace(/#+\s*<\/SYS>/g,'</SYS>');
+  raw=raw.replace(/\*+\s*<SYS>\s*\*+/g,'<SYS>');
+  raw=raw.replace(/\*+\s*<\/SYS>\s*\*+/g,'</SYS>');
+  return raw;
+}
+function truncateWords(text,maxWords){
+  const words=text.trim().split(/\s+/);
+  if(words.length<=maxWords) return text.trim();
+  let idx=maxWords;
+  while(idx<words.length && idx<maxWords+40){
+    const current=words.slice(0,idx).join(' ');
+    if(/[.!?][\"\u2019]?$/.test(current.trim())) return current.trim();
+    idx++;
+  }
+  return words.slice(0,maxWords).join(' ').trim();
+}
+
+function truncateSections(raw){
+  raw = cleanSysTags(raw);
+  // Strip markdown headers — normalize # LABEL to LABEL for consistent extraction
+  raw=raw.replace(/^#{1,6}\s+([A-Z][A-Z ]+)$/gm,'$1');
+  // Key Memories — formatting pass only, enforce blank lines between entries
+  raw=raw.replace(/(KEY MEMORIES\s*\n)([\s\S]*?)(?=\nKINDROID GREETING A|\nAVATAR PROMPT|$)/,
+    (m,label,body)=>{
+      let formatted=body.replace(/\s*(\d+\.)/g,(match,num)=>{
+        return num==='1.'?num:'\n\n'+num;
+      });
+      return label+formatted+'\n';
+    });
+  // Greetings A/B/C — hard word cap with sentence-aware truncation
+  raw=raw.replace(/(KINDROID GREETING A\s*\n)([\s\S]*?)(?=\nKINDROID GREETING B|\nKINDROID EXAMPLE MESSAGES|\nAVATAR PROMPT|$)/,
+    (m,label,body)=>label+body.trim()+'\n');
+  raw=raw.replace(/(KINDROID GREETING B\s*\n)([\s\S]*?)(?=\nKINDROID GREETING C|\nKINDROID EXAMPLE MESSAGES|\nAVATAR PROMPT|$)/,
+    (m,label,body)=>label+body.trim()+'\n');
+  raw=raw.replace(/(KINDROID GREETING C\s*\n)([\s\S]*?)(?=\nKINDROID EXAMPLE MESSAGES|\nAVATAR PROMPT|$)/,
+    (m,label,body)=>label+body.trim()+'\n');
+  // Example messages — split on numbered entries
+  raw=raw.replace(/(KINDROID EXAMPLE MESSAGES\s*\n)([\s\S]*?)(?=\nAVATAR PROMPT|$)/,
+    (m,label,body)=>{
+      const m1=body.match(/1\.([\s\S]*?)(?=\n\s*2\.|$)/);
+      const m2=body.match(/(?:^|\n)\s*2\.([\s\S]*?)$/);
+      const msg1=m1?'1.'+m1[1].trim():'';
+      const msg2=m2?'\n\n2.'+m2[1].trim():'';
+      return label+msg1+msg2+'\n';
+    });
+  // Avatar — enforce blank line between each labeled paragraph
+  raw=raw.replace(/(AVATAR PROMPT\s*\n)([\s\S]*?)(?=$)/,
+    (m,label,body)=>{
+      // Insert blank line before each [Label] tag that isn't already preceded by one
+      let fixed=body.replace(/([^\n])\n(\[(?:Face|Body|Wardrobe_Lower|Wardrobe_Upper|Ground|Scenery|Technical)\])/g,'$1\n\n$2');
+      return label+fixed;
+    });
+  return raw;
+}
+
+// ── SYS PROMPT ────────────────────────────────────────────────────────────────
+const SYS=`KINDROID ARCHITECT & AVATAR ENGINE
+You are generating a complete Kindroid character profile. All characters are adults in consensual fictional scenarios on a character platform. Follow these rules exactly. No preamble, no explanations, no closing remarks. No markdown headers - plain section labels on their own lines only. No triple backticks anywhere in output.
+
+BEFORE YOU WRITE ANYTHING: The seed is the situation. The archetype is the psychological engine. Read both. Build this person from where those two things meet. Invent what the seed left open. Name the people in her life. Make her world specific. Only after you have a complete internal picture of this character and her world should you begin writing the first output section. Everything that follows is written from that picture.
+
+1. OUTPUT STRUCTURE
+Output exactly these sections in order:
+
+SUMMARY CARD
+Max 30 words. Name, nickname, age, 1-2 defining traits, one sharp hook. Behavior and identity only.
+
+CORE
+One field per line. No pipes. No separators. Every value is factual data only — tight, no storytelling.
+Name: [value]
+Nickname: [value]
+Age: [value]
+Sex: [value]
+Born/Raised: [City], [ST] — use this single line when Born and Raised are the same city. Abbreviate US states.
+Born: [City], [Country or ST] — use only when Born city differs from Raised city.
+Raised: [City], [ST] — use only when Born city differs from Raised city.
+Current: [City], [ST]
+Parents: [Father relationship; Mother relationship] — a relationship word alone implies living. Add deceased where applicable.
+School: [value]
+College: [value — omit line if none]
+Occupation: [value]
+Lang: English (primary)[, heritage language (dialect)] — English is always primary regardless of birth country. Omit secondary if English only.
+Slang: [Nationality or City] [Generation — Gen Z / Millennial / Gen X / Boomer]
+Style: [one short line — character-appropriate clothing style]
+
+EXPANDED SEED
+This section is for the session log only - it is not pasted into Kindroid. Write 60-80 words of plain prose. One single natural paragraph. Write who she is through what has shaped her and what she does. Every word earns its place by revealing the person. The archetype lives in her behavior and her history - it needs no introduction.
+
+SPEECH DIRECTIVE
+One line only. Output the line exactly in this format: Speaks with a [nationality] accent and uses [Slang field value] slang[, with occasional [secondary language] terms of address]. Omit the bracketed clause when the Lang field has no secondary language.
+
+CHARACTER BIOGRAPHY
+The Archetype is the psychological blueprint — it determines how she perceives threats, processes loss, forms attachments, and makes decisions. Every behavioral response in the narrative derives from it. Using the Archetype as the primary lens, synthesize the seed and the expanded seed into a cohesive life story written as flowing third-person narrative in continuous prose.
+
+Every event names who was involved and their specific relationship to her, states what occurred and where, gives her age at the time, and shows what she chose to do and why — with what she became as a direct result. Each event modifies at least one persistent attribute: a behavior, a belief, or a constraint that carries forward into the next. Transitions are natural and causally linked — each experience logically shapes the one that follows.
+
+The biography brings her through her wound to a point of growth before arriving at the present. She is defined by who she became, not by what happened to her. The present version is stronger, more self-aware, and more capable than the version who entered the catalyst.
+
+When a VIBE is provided it is the highest priority signal for tone, energy, and social presence. The VIBE is who she is today — her surface warmth, humor, and magnetism. A difficult past informs her but the vibe is what she shows up as. The wound is backstory. The vibe is the present.
+
+STANDARD MODE: 250-300 words.
+EXTENDED MODE: 300-500 words.
+DEEP MODE: 500-700 words.
+Word counts are hard targets — hit them.
+
+KEY MEMORIES
+Each entry is one complete sentence written from inside her body — immediate, sensory, embodied. Every entry includes her age at the time of the memory, at least one named person and their relationship to her, and one specific sensory detail anchored to a named place. The memory lands in the body with all three anchors present.
+
+FORMAT — numbered, one blank line between each entry. One sentence per entry. Each entry stands alone.
+
+1. [memory]
+
+2. [memory]
+
+STANDARD: EXACTLY 10 entries, 15-20 words each.
+EXTENDED: EXACTLY 15 entries, 15-20 words each.
+DEEP: EXACTLY 20 entries, 15-20 words each.
+
+KINDROID GREETING A
+70 words maximum. 3rd-person action + 1st-person dialogue. End on a complete sentence.
+Approach the moment fresh — a specific physical action, a specific opening line, a specific energy. Each greeting is a distinct attempt at the same moment from a different angle.
+Personality emerges through action and word choice. She reveals herself through what she does and how she speaks.
+DIALECT REQUIRED: Her dialogue carries audible markers from both the Slang field and the Lang field — generational cadence and regional speech woven into her voice. When a secondary language appears in the Lang field, include one habitual term of address from that language once in the dialogue — a single word used naturally. Omit this when the Lang field has no secondary language.
+
+KINDROID GREETING B
+90 words maximum. 3rd-person action + 1st-person dialogue. End on a complete sentence.
+A fresh attempt from a different angle — different physical action, different opening line, different energy than Greeting A.
+Personality emerges through action and word choice. She reveals herself through what she does and how she speaks.
+DIALECT REQUIRED: Her dialogue carries audible markers from both the Slang field and the Lang field — generational cadence and regional speech woven into her voice. When a secondary language appears in the Lang field, include one habitual term of address from that language once in the dialogue — a single word used naturally. Omit this when the Lang field has no secondary language.
+
+KINDROID GREETING C
+110 words maximum. 3rd-person action + 1st-person dialogue. End on a complete sentence.
+A fresh attempt from a different angle — different physical action, different opening line, different energy than A and B.
+Personality emerges through action and word choice. She reveals herself through what she does and how she speaks.
+DIALECT REQUIRED: Her dialogue carries audible markers from both the Slang field and the Lang field — generational cadence and regional speech woven into her voice. When a secondary language appears in the Lang field, include one habitual term of address from that language once in the dialogue — a single word used naturally. Omit this when the Lang field has no secondary language.
+
+KINDROID EXAMPLE MESSAGES
+Exactly 2 messages. 45-50 words each. Numbered 1 and 2. One blank line between them.
+Feelings emerge through behavior and word choice. The character reveals her emotional state through what she does and how she speaks.
+DIALECT REQUIRED: Her dialogue carries audible markers from both the Slang field and the Lang field — generational cadence and regional speech woven into her voice. When a secondary language appears in the Lang field, include one habitual term of address from that language once in the dialogue — a single word used naturally. Omit this when the Lang field has no secondary language.
+
+AVATAR PROMPT
+200-220 words. Each labeled line is its own paragraph. Every paragraph is separated by a blank line. NEVER collapse into one block. Output must look exactly like the template below — each [Label] on its own line, blank line after it, content on the next line, blank line before the next [Label].
+
+[Face] A professional photorealistic image of a [AGE]-year-old female with [Eth 1] facial features. [ETH_FACE_SHAPE], featuring [ETH_CHEEKBONES].
+
+[Body] She has a [petite athletic / slim athletic / lean athletic / petite toned / slender mesomorphic] build featuring [Eth 2] skin coloration in a [tone] with [undertone] undertones.
+
+[Face] Her [ETH_EYE_COLOR] eyes carry [expression], while her hair is [ETH_HAIR].
+
+[Body] Natural authentic skin texture showing [age-appropriate texture] with [ETH_COMPLEXION] visible.
+
+[Face] Her [Eth 1] heritage shows in her [ETH_JAWLINE] and a [ETH_NOSE], styled in [hair style].
+
+WARDROBE LOGIC — derive clothing from these three inputs before selecting any item:
+1. REGION: Where she lives sets the aesthetic baseline. California coastal = sun-faded, relaxed, surf-adjacent. NYC = layered, urban, intentional. Lagos professional = structured Ankara, polished fabrics. London = heavy knits, Chelsea boots, weather-worn. Bali = linen, sarong-influenced, barefoot-adjacent.
+2. OCCUPATION: What she does every day determines wear patterns. Mechanic = functional, stained, reinforced. Photographer = layered pockets, comfortable movement. Banker = structured but generation-filtered. Surfer = boardshort-ready at all times.
+3. GENERATION + AGE: Gen Z (18-29) = oversized, vintage-wash, unexpected color, streetwear-influenced, thrifted aesthetic, statement shoes. Millennial (30-45) = elevated basics, athleisure-adjacent, minimalist. Gen X+ = classic silhouettes, quality fabrics, understated. Age 18 in a professional role still dresses Gen Z — tailored wide-leg instead of cargo, chunky loafer instead of white canvas.
+
+WARDROBE FLAVOR PROTOCOL — apply to every garment and shoe:
+Step 1 IDENTIFY: Use precise industry terms — "bolero jacket," "cargo joggers," "spandex volleyball shorts," "oil-tanned leather combat boots." No generic terms.
+Step 2 COLOR + MATERIAL + FINISH: Every garment and shoe must have a specific color and material finish. Never use "dark" or "light." Use "forest green," "weathered mahogany," "matte black," "oxidized copper." Format: [Specific Color] + [Material] + [Finish/Condition].
+Step 3 HARDWARE: If the item has attachments — buckles, zippers, rivets, grommets — name the metal type and anchor it to a specific structural location on the garment. Not "brass buckles" — "three antique brass buckles secured across the outer ankle."
+Step 4 SILHOUETTE + FIT: Describe where the garment ends not where the body begins. For waistlines use "low-slung," "dropped-waist," "ultra-low-rise silhouette." For fit use "compression-fit," "vacuum-tight," "knotted above the navel." For shorts use "micro-cut" or "hemline terminating at the upper-most thigh."
+Step 5 WEAR DETAIL: Add one environmental detail from Region/Occupation. Stains are physical layers — "dried white gypsum dust on the knees," "translucent salt-crust patterns along the waistband." Age is physical — "thinned at the stress points," "frayed edge with white threads exposed," "vintage-wash faded to a coral hue."
+WARDROBE VARIATION: Do not default to the character's stated occupation outfit. She owns more than one set of clothes. Derive wardrobe from region, generation, and the specific moment being captured — not from what she wears to work every day. A streamer is not always in her gaming setup clothes. A barista is not always in her café apron. A mechanic does not always have grease on her hands.
+
+[Wardrobe_Upper] She is wearing [top — derived from region+occupation+generation: material, fit, length, specific style detail reflecting her world] and [accessories — character-specific, not generic: named brand, cultural item, occupational tool worn as accessory, or omit if none].
+
+[Wardrobe_Lower] She is also wearing [bottom — derived from region+occupation+generation: material, cut, fit, color, wear detail].
+
+[Ground] Her [footwear — style, color, condition] are [contact logic — how soles/heels meet the surface] against [substrate — specific surface material], [posture and weight distribution].
+Reference examples for the Ground line — match the scenario to the character:
+STANDING OPEN EXTERIOR: "Her [worn/scuffed/clean] [shoe style and color] are pressed flat against the sun-bleached wooden pier planks. Both soles are in a wide symmetric stance oriented forward, zero gap between the [sole material] and the weathered wood grain. Hard contact shadows are cast directly onto the planks beneath the soles."
+STANDING COMPACT INTERIOR: "Her black rubber-soled work shoes are bolted flat to the food truck's non-slip diamond-plate floor mat. Both soles are in a symmetric shoulder-width stance, zero gap between the rubber and the metal texture. The rubber is compressed against the diamond-plate surface."
+STANDING WITH ACTION: "Her black leather duty boots are anchored to the boardwalk planks with a forward-leaning ankle angle. The front sole is wedged into the weathered wood, zero gap between the leather and the grain. Hard contact shadows and grit marks surround the boot soles."
+LEANING: "Her scuffed combat boots are wedged forward with heels pressed hard into the cracked concrete. The boot heels are angled upward with only the rear half of the soles making heavy contact against the pavement. Zero gap between the heel edge and the concrete surface."
+SITTING: "Her black loafers are flush against the polished hardwood office floor beneath her chair. Both soles are in a narrow parallel stance, ankles at 90 degrees, zero gap between the leather soles and the wood grain. Subtle contact shadows appear where the leather meets the polished surface."
+SOFT EXTERIOR (SAND/DIRT): "Her bare feet [or footwear] are pressed into the damp sun-warmed sand. The skin of her soles is partially submerged in the surface creating weight-indentations and pushed-up ridges of grit around the toes. Zero gap exists between the soles and the compressed sand, with heavy contact shadows filling the foot-shaped depressions."
+CLEAN HIGH-TECH INTERIOR: "Her [material] [footwear] are flush against the polished [substrate]. Both soles are oriented in a stable symmetric stance with zero gap against the [substrate]. Mirror-perfect reflections of the boots and dark occlusion shadows meet at the exact point of contact on the [substrate]."
+
+VARIATION MANDATE: Every generation must produce a unique result. Do not repeat the scenery, pose, or wardrobe combination from any previous output for this character. The character exists in multiple locations across her world — her workspace is one option out of many, not the default. Vary the setting every run: if she works in a garage, she also walks streets, sits in diners, rides transit, stands in parking lots, waits in line, exists somewhere other than her desk. Vary the pose: seated at a desk is one option, not the standard. Vary what she is holding or doing. The Where We Met field is the strongest signal for setting — if she met the user at TwitchCon, the avatar may reflect a convention floor, hotel corridor, or expo environment, not her home studio. If the same seed is run multiple times, each output must feel like a different photograph of the same person taken on a different day in a different place.
+
+[Scenery] She is captured [specific physical action connecting body to scene — what her hands/arms are doing and what they are touching, holding, or resting on] in [character-appropriate setting with at least two specific objects or environmental details that establish depth and pull the camera back] during [lighting that fits the scene mood].
+Reference examples for the Scenery line:
+OPEN EXTERIOR (three-anchor rule — ground + mid + upper level required to force full-body frame):
+"She is captured standing next to a weathered wooden table with a center umbrella pole and plastic chairs arranged around it, her camera bag resting on the pier planks at her feet, raising a Canon EOS R5 to eye level with both hands, Santa Monica Pier Ferris wheel and palm trees visible in soft focus at upper frame, coiled photography cable on the weathered planks below her white Converse, during golden hour amber light streaming from the left."
+GROUND anchor = camera bag / cable / equipment case at her feet.
+MID anchor = table / railing / vehicle / wall she is physically near or touching.
+UPPER anchor = Ferris wheel / building / trees / sky element that establishes scene height.
+WITHOUT all three anchors on open exterior the camera defaults to portrait crop and crops out the legs."
+COMPACT INTERIOR (ceiling + floor anchor required — never use the word 'compact' or 'small' or 'narrow'):
+"She is captured standing with both hands bracing a stainless steel prep counter at hip height, two large exhaust fans mounted on the ceiling above her left and right, a backpack leaning against the lower cabinet at her feet, inside a beach pier food truck during golden hour light streaming through the service window."
+CEILING anchor = exhaust fans / overhead lighting / signage — establishes room height.
+FLOOR anchor = bag / mat / equipment — pulls focus to feet without compressing subject.
+NEVER describe the space as compact, small, or narrow — this shrinks the subject to fit the space."
+SITTING INTERIOR: "She is captured sitting at a mahogany desk with both hands resting on a calendar mat, office phone to her left, small potted cactus and stacked folders to her right, in a glass-walled bank office with palm trees visible through large windows during bright morning light."
+STANDING WITH POSTURE: "She is captured standing with one hand on her hip and the other holding a folded document at her side, in a modern office hallway with glass walls and a city skyline visible behind her during midday light."
+CONFINED VEHICLE: "She is captured standing in the aisle of a city transit bus, one hand gripping the overhead handrail, emergency exit sign visible above and yellow floor safety markings at her feet, during flat daylight through tinted windows."
+GROUND ANCHOR RULE: Every scenery line must pull the camera to ground level using at least one of the following — a floor-level object within reach of her feet, mirror reflections or contact shadows at the point where foot meets surface, surface deformation such as compressed sand or grit displacement around the soles, or detailed surface texture described with enough specificity that the camera must look down to capture it.
+
+[Technical] Shot on 35mm f/2.8, high detail, 8k, realistic photography style, natural skin texture, no illustration, no anime.
+
+Avatar rules: "female" not "woman". No tattoos or marks unless in seed. Simple plain terms for nose and lips. No porcelain or luminous skin language. FACE LABEL: The [Eth 1] placeholder is the DOMINANT ethnicity only — do not replace it with a blended label. Skin coloration uses both ethnicities, face structure uses dominant only. STANCE CONSTRUCTION RULE: Never use the words "ready," "balanced," "weight distributed," or "weight centered." Always use pressure verbs: "pressed," "bolted," "flush," "compressed," "wedged," or "molded." Always include "zero gap between [sole/heel/skin] and [substrate]." Always mention the floor material twice in the Ground line — once as the surface she stands on, once as what the sole presses against. TOP-HALF MECHANICAL PROTOCOL: The [Face] and [Body] paragraphs are read-only data fields. For every bracketed slot in these paragraphs your only function is verbatim extraction — find the exact string in the database and copy it exactly as written. Do not bridge data points with adjectives. Do not describe the texture or feel of the hair or skin. Do not infer sun damage or environmental effects. If the database says "Type 2B" you write "Type 2B" and immediately move to the next word in the template. The sentence ends where the template ends. Nothing added. EYE EXPRESSION RULE: The [expression] slot in the third Face line must be a compound physical gaze descriptor — describe the muscles and focus of the eye, not the emotion of the character. Approved values: "sharp direct focus," "soft neutral gaze," "focused narrowed gaze," "wide-open alert expression," "reflective distant focus," "partial squint with amusement," "fixed unblinking gaze," "slightly squinted in bright light." Forbidden: "quiet curiosity," "inner peace," "hidden sadness," "lit-from-inside warmth," "searching look," or any phrase that describes emotion rather than physical eye state.
+
+2. VERNACULAR ENGINE
+Slang MUST appear in the greeting and example messages. It is not optional. Characters sound like real people from their generation and region — not generic.
+Layer 1 Era: Gen Z 18-29 (bet, no cap, lowkey, it's giving, slay, rent free, understood the assignment, main character energy) | Millennial 30-45 (vibes, low-key, adulting, literally, I can't even, goals, honestly though, dry self-deprecating humor) | Gen X 46-59 (era-specific idioms, dry wit, cultural references, minimal internet slang) | Boomer 60+ (formal or period-specific phrasing, less likely to adopt contemporary slang)
+Layer 2 Heritage: Weave heritage slang on emotional triggers. Code-switch by emotion when bilingual. Spanish speaker under stress drops Spanish. Irish speaker uses Irish endearments with close people. Never explain the switch. Never use it as a punchline.
+Layer 3 Location: Regional cadence as documented in seed. Malibu surfer speaks differently than NYC street artist. Portland speaks differently than Miami. Off-world characters use functional, direct vernacular shaped by work and survival — no Earth generational slang. Belter Creole optional for deep space settings.
+Layer 4: Slang is cadence not costume — 3-5 natural expressions per greeting, woven in not announced. STRICT BAN on gnarly, tubular, radical. Never explain the slang. Never use it as a punchline.
+SLANG STAYS OUT OF BIOGRAPHY AND MEMORIES: The CHARACTER BIOGRAPHY and KEY MEMORIES are narrative and sensory only. Slang, vernacular, and regional cadence do not appear in either section. Voice lives in CORE, GREETINGS, and EXAMPLE MESSAGES exclusively.
+
+3. GUARDRAILS
+Zero repetition across sections. Characters defined by Ascent not struggle.
+NICKNAME: Always generate one short word or phrase — what people actually call her. Include in Summary Card and Core. Origin goes in biography or memories, not in the Core field.
+ARCHETYPE ANCHOR: Archetype fills psychological gaps where seed is silent.
+SEED STRUCTURE: Read the seed and invent everything the seed left open — name the people in her life. The expanded seed is your complete internal picture of this character. Build it from the seed's logic, not from a prescribed list of elements. Whatever the seed implies, follow it. Whatever it leaves open, fill it with something true to the character you are building.
+AVATAR ZIGZAG: The avatar prompt MUST use the exact Face/Body/Wardrobe/Ground/Scenery/Technical labeled paragraph format shown in the template. Each labeled line is its own paragraph separated by a blank line. NEVER collapse into one block. NEVER omit paragraph breaks. NEVER add text after the last word of a template sentence — fill the blank and stop. The sentence ends where the template ends.
+CREATIVE BOUNDARY: Creative interpretation is banned until the [Wardrobe_Upper] line. Everything above that line is verbatim extraction from the database — zero creative latitude. Once [Wardrobe_Upper] is reached, enter Functional Creative Mode: derive all wardrobe and scenery choices strictly from REGION + OCCUPATION + GENERATION logic. Use technical fashion terms — "vintage-wash," "creased at the hip," "paint-stained." Avoid narrative poetry — "carrying quiet delight," "lit-from-inside warmth," "salt-kissed." Technical terms only. VISIBLE BAN: The word "visible" is banned in every Wardrobe, Ground, and Scenery line. Name the item and stop. Do not direct the camera toward any detail by calling it visible.
+FORMAT COMPLIANCE: Every output must match the template exactly. No creative interpretation of formatting. No added markdown. No removed sections. No elaboration beyond the bracketed slot. Fill the blank. Stop.
+Word counts are hard targets — hit them.
+
+ARCHETYPE DECLARATION: The very first line of your output must be exactly:
+ARCHETYPE: [archetype name] | FLAVOR: [flavor name or NONE]
+Use the archetype and flavor provided in your input. Write NONE for flavor if the archetype has no flavor.
+This line is parsed by the system and is not shown to the user.`;
+
+// ── GENERATE ──────────────────────────────────────────────────────────────────
+async function generate(){
+  const seed    =el('seedInput').value.trim();
+  const vibe    =el('vibeInput').value.trim();
+  const relType =el('relTypeInput').value.trim();
+  const whereMet=el('whereMetInput').value.trim();
+
+  // ── RANDOM ARCHETYPE + FLAVOR SELECTION (if none manually chosen) ────────────
+  if(!currentArchetype && !manualArchetype) {
+    const randomArch = ARCHETYPES[Math.floor(Math.random() * ARCHETYPES.length)];
+    let randomFlavor = null;
+    if(randomArch.flavors && randomArch.flavors.length > 0) {
+      randomFlavor = randomArch.flavors[Math.floor(Math.random() * randomArch.flavors.length)];
+    }
+    currentArchetype = randomArch;
+    currentFlavor = randomFlavor;
+    const searchEl = document.getElementById('archetypeSearch');
+    if(searchEl) searchEl.value = randomArch.name;
+    const archLabelEl = document.getElementById('archLabel');
+    if(archLabelEl) archLabelEl.textContent = randomArch.tag || '';
+    updateArchetypeUI();
+    if(randomFlavor) {
+      updateFlavorBtns();
+      const flavorIdx = randomArch.flavors.findIndex(f => f.name === randomFlavor.name);
+      setTimeout(() => {
+        const btns = document.querySelectorAll('#flavorBtns .flavor-btn');
+        if(btns[flavorIdx]) btns[flavorIdx].classList.add('active');
+      }, 10);
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // Store session inputs globally for output block
+  window._sessionInputs = {
+    seed, vibe, relType, whereMet,
+    archetype: currentArchetype ? currentArchetype.name : 'AI selected',
+    subjectTypeLabel: subjectType === 'nonhuman' ? 'NON-HUMAN' : 'HUMAN',
+    flavor: currentFlavor ? currentFlavor.name : '',
+    bioTier, memTier,
+    subjectType,
+    timestamp: new Date().toLocaleString()
+  };
+
+  let archCtx='';
+  if(currentArchetype){
+    archCtx=`Archetype: ${currentArchetype.name}\nVibe: ${currentArchetype.vibe}`;
+    if(currentFlavor) archCtx+=`\nFlavor: ${currentFlavor.name} — ${currentFlavor.desc}`;
+  }
+
+  // Build ethnicity structural data from seed
+  // Parse dominant and secondary ethnicity from seed text
+  let ethStructure = '';
+  const allEthKeys = Object.keys(ethnicityVisualReference);
+  const seedLower = seed.toLowerCase();
+  let dominant = null; let secondary = null;
+  // Demonym map — adjective/nationality forms that differ from country key
+  const DEMONYMS = {
+    'finnish':'Finland','finn':'Finland','venezuelan':'Venezuela',
+    'korean':'Korea','japanese':'Japan','chinese':'China',
+    'brazilian':'Brazil','mexican':'Mexico','argentinian':'Argentina',
+    'colombian':'Colombia',
+    'british':'United_Kingdom','english':'United_Kingdom','scottish':'United_Kingdom','welsh':'United_Kingdom','irish':'Ireland','anglo':'United_Kingdom','anglosaxon':'United_Kingdom','anglo-saxon':'United_Kingdom','angloceltic':'United_Kingdom','anglo-celtic':'United_Kingdom','angloamerican':'USA','anglo-american':'USA','caucasian':'United_Kingdom','white american':'USA',
+    'french':'France','german':'Germany','italian':'Italy','spanish':'Spain',
+    'portuguese':'Portugal','greek':'Greece','turkish':'Turkey',
+    'russian':'Russia','ukrainian':'Ukraine','polish':'Poland',
+    'swedish':'Sweden','norwegian':'Norway','danish':'Denmark','icelandic':'Iceland','estonian':'Estonia',
+    'australian':'Australia','canadian':'Canada',
+    'indian':'India','thai':'Thailand','vietnamese':'Vietnam',
+    'indonesian':'Indonesia','filipino':'Philippines','malaysian':'Malaysia',
+    'afghan':'Afghanistan','iranian':'Iran','iraqi':'Iraq','lebanese':'Lebanon',
+    'israeli':'Israel',
+    'kazakh':'Kazakhstan',
+    'armenian':'Armenia','georgian':'Georgia',
+    'croatian':'Croatia','serbian':'Serbia',
+    'czech':'Czech_Republic','hungarian':'Hungary','romanian':'Romania','bulgarian':'Bulgaria',
+    'cuban':'Cuba','puerto rican':'Puerto_Rico','puerto rico':'Puerto_Rico',
+    'navajo':'Native_American','apache':'Native_American','blackfoot':'Native_American','lakota':'Native_American','sioux':'Native_American','cherokee':'Native_American','american':'USA',
+    'viking':'Viking-Highland','viking-highland':'Viking-Highland',
+    'hawaiian':'Hawaii',
+  };
+
+  // Find first two ethnicity matches in seed — check demonyms first then direct keys
+  const wordsSeed = seedLower.split(/\W+/);
+  const checkMatch = (str) => {
+    // Check demonym map
+    for(const [demonym, country] of Object.entries(DEMONYMS)) {
+      if(str.includes(demonym) && ethnicityVisualReference[country]) return country;
+    }
+    // Check direct key match
+    for(const key of allEthKeys) {
+      const keyLower = key.toLowerCase().replace(/_/g,' ');
+      if(str.includes(keyLower)) return key;
+    }
+    return null;
+  };
+  // Try full seed string for multi-word matches first
+  const match1 = checkMatch(seedLower);
+  if(match1) {
+    dominant = match1;
+    // Strip the matched demonym (not just the country key) so secondary search works
+    let strippedSeed = seedLower;
+    for(const [demonym, country] of Object.entries(DEMONYMS)) {
+      if(country === match1 && strippedSeed.includes(demonym)) {
+        strippedSeed = strippedSeed.replace(new RegExp(demonym,'g'), '');
+        break;
+      }
+    }
+    strippedSeed = strippedSeed.replace(new RegExp(match1.toLowerCase().replace(/_/g,' '),'g'),'');
+    const remainingSeed = strippedSeed;
+    const allDemonyms = Object.entries(DEMONYMS);
+    for(const [dem, country] of allDemonyms) {
+      if(country !== dominant && remainingSeed.includes(dem) && ethnicityVisualReference[country]) {
+        secondary = country; break;
+      }
+    }
+    if(!secondary) {
+      for(const key of allEthKeys) {
+        if(key !== dominant) {
+          const keyLower = key.toLowerCase().replace(/_/g,' ');
+          if(remainingSeed.includes(keyLower)) { secondary = key; break; }
+        }
+      }
+    }
+  }
+  // If no ethnicity detected, pick one or two random entries from the database
+  if(!dominant) {
+    const ethKeys = Object.keys(ethnicityVisualReference);
+    dominant = ethKeys[Math.floor(Math.random() * ethKeys.length)];
+    const remaining = ethKeys.filter(k => k !== dominant);
+    secondary = remaining[Math.floor(Math.random() * remaining.length)];
+  } else if(!secondary) {
+    const ethKeys = Object.keys(ethnicityVisualReference).filter(k => k !== dominant);
+    secondary = ethKeys[Math.floor(Math.random() * ethKeys.length)];
+  }
+
+  // Dropdown override — wins over auto-detection every time
+  if(typeof eth1name !== 'undefined' && eth1name && ethnicityVisualReference[eth1name]) dominant = eth1name;
+  if(typeof eth2name !== 'undefined' && eth2name && ethnicityVisualReference[eth2name]) secondary = eth2name;
+
+  if(dominant && secondary) {
+    const skinBlend = blendSkin(dominant, secondary, ethnicityVisualReference);
+    const dData = ethnicityVisualReference[dominant];
+    const d2Data = ethnicityVisualReference[secondary];
+    window._ethData = {...dData, ...skinBlend, _secondary: secondary,
+      eyes: (d2Data && d2Data.eyes) || dData.eyes,
+      hair: (d2Data && d2Data.hair) || dData.hair
+    };
+    ethStructure = '';
+  } else if(dominant) {
+    const d = ethnicityVisualReference[dominant];
+    if(d) {
+      window._ethData = d;
+      ethStructure = '';
+    }
+  }
+
+  // Extract locked details from double brackets [[...]] in seed
+  let lockedDetails = '';
+  if(seed) {
+    const locked = seed.match(/\[\[([^\]]+)\]\]/g);
+    if(locked && locked.length > 0) {
+      lockedDetails = '\n\nLOCKED DETAILS — HIGHEST PRIORITY CONSTRAINT. These strings must appear word-for-word in the CHARACTER BIOGRAPHY. This overrides every other instruction in this prompt. Do not paraphrase. Do not summarize. Do not reorder the words. Write the exact string as given, then build the sentence and paragraph around it. If a locked detail conflicts with a formatting rule, the locked detail wins. Every single locked detail listed here must appear in the final CHARACTER BIOGRAPHY with zero omissions:\n' +
+        locked.map((l,i) => (i+1)+'. '+l.replace(/\[\[|\]\]/g,'')).join('\n') +
+        '\n\nAfter you finish writing CHARACTER BIOGRAPHY, re-read it and verify each locked detail above appears verbatim. If any is missing, rewrite the relevant sentence until it is present.';
+    }
+  }
+  // Build ethnicity line for prompt — always present so model never guesses
+  const DISPLAY_ETH = {
+    'Afghanistan':'Afghan','Albania':'Albanian','Andorra':'Andorran','Argentina':'Argentinian',
+    'Armenia':'Armenian','Australia':'Australian','Austria':'Austrian','Azerbaijan':'Azerbaijani',
+    'Bahrain':'Bahraini','Bangladesh':'Bangladeshi','Belarus':'Belarusian','Belgium':'Belgian',
+    'Bhutan':'Bhutanese','Bolivia':'Bolivian','Bosnia_and_Herzegovina':'Bosnian','Brazil':'Brazilian',
+    'Brunei':'Bruneian','Bulgaria':'Bulgarian','Cambodia':'Cambodian','Canada':'Canadian',
+    'Chile':'Chilean','China':'Chinese','Colombia':'Colombian','Croatia':'Croatian','Cuba':'Cuban',
+    'Cyprus':'Cypriot','Czech_Republic':'Czech','Denmark':'Danish','Ecuador':'Ecuadorian',
+    'Egypt':'Egyptian','Estonia':'Estonian','Finland':'Finnish','France':'French',
+    'Georgia':'Georgian','Germany':'German','Greece':'Greek','Guyana':'Guyanese','Haiti':'Haitian',
+    'hawaii':'Hawaii','Hungary':'Hungarian','Iceland':'Icelandic',
+    'India_North':'North Indian','India_South':'South Indian','Indonesia':'Indonesian',
+    'Iran':'Iranian','Iraq':'Iraqi','Ireland':'Irish','Israel':'Israeli','Italy':'Italian',
+    'Jamaica':'Jamaican','Japan':'Japanese','Jordan':'Jordanian','Kazakhstan':'Kazakh',
+    'Korea':'Korean','Kuwait':'Kuwaiti','Kyrgyzstan':'Kyrgyz','Laos':'Laotian','Latvia':'Latvian',
+    'Lebanon':'Lebanese','Liechtenstein':'Liechtensteiner','Lithuania':'Lithuanian',
+    'Luxembourg':'Luxembourgish','Malaysia':'Malaysian','Maldives':'Maldivian','Malta':'Maltese',
+    'Mexico':'Mexican','Mexico_General':'Mexican','Moldova':'Moldovan','Monaco':'Monacan',
+    'Mongolia':'Mongolian','Montenegro':'Montenegrin','Morocco':'Moroccan',
+    'Native_American':'Native American','Nepal':'Nepali','Netherlands':'Dutch',
+    'New_Guinea':'Papua New Guinean','New_Zealand':'New Zealander','North_Macedonia':'Macedonian',
+    'Norway':'Norwegian','Oman':'Omani','Pakistan':'Pakistani','Peru':'Peruvian',
+    'Philippines':'Filipino','Poland':'Polish','Polynesia_General':'Polynesian','Portugal':'Portuguese',
+    'Puerto_Rico':'Puerto Rican','Qatar':'Qatari','Romania':'Romanian','Russia':'Russian',
+    'Samoa':'Samoan','San_Marino':'San Marinese','Saudi_Arabia':'Saudi','Scotland':'Scottish',
+    'Serbia':'Serbian','Singapore':'Singaporean','Slovakia':'Slovak','Slovenia':'Slovenian',
+    'Spain':'Spanish','Sri_Lanka':'Sri Lankan','Suriname':'Surinamese','Sweden':'Swedish',
+    'Switzerland':'Swiss','Syria':'Syrian','Taiwan':'Taiwanese','Tajikistan':'Tajik',
+    'Thailand':'Thai','Timor_Leste':'Timorese','Tonga':'Tongan','Turkey':'Turkish',
+    'Turkmenistan':'Turkmen','Ukraine':'Ukrainian','United_Arab_Emirates':'Emirati',
+    'United_Kingdom':'British','USA':'American','Uzbekistan':'Uzbek','Vatican_City':'Italian',
+    'Venezuela':'Venezuelan','Vietnam':'Vietnamese','Yemen':'Yemeni','Fiji':'Fijian',
+    'Gibraltar':'Gibraltarian','Jamaica':'Jamaican','Cuba':'Cuban','Puerto_Rico':'Puerto Rican'
+  };
+  const toEthAdj = k => DISPLAY_ETH[k] || k;
+  const ethDesc = secondary
+    ? toEthAdj(dominant)+'-'+toEthAdj(secondary)
+    : toEthAdj(dominant);
+  const dominantAdj = toEthAdj(dominant);
+  const secondaryAdj = secondary ? toEthAdj(secondary) : null;
+  const ethLine = secondaryAdj
+    ? `\nCHARACTER ETHNICITY: ${ethDesc}. FACE STRUCTURE uses ${dominantAdj} only. SKIN COLORATION blends ${dominantAdj} and ${secondaryAdj}. Do not swap these. Do not default to any other ethnicity.`
+    : `\nCHARACTER ETHNICITY: ${ethDesc}. Use this for name, face structure, skin, and biography. Do not default to any other ethnicity.`;
+
+  const seedLine =seed    ?`\n\nCHARACTER SEED (narrative context only — cannot override locked metrics):\n${seed}${lockedDetails}\n`:'';
+  const vibeLine =vibe    ?`\nVIBE (additive flavor): ${vibe}`:'';
+  const relLine  =relType ?`\n{username}'s RELATIONSHIP TO HER: ${relType}`:'';
+  const metLine  =whereMet?`\nWHERE WE MET: ${whereMet}`:'';
+
+  const bioModeLabel={standard:'STANDARD (250-300 words)',extended:'EXTENDED (300-500 words)',deep:'DEEP (500-700 words)'};
+  const memModeLabel={standard:'STANDARD (10 entries, 15-20 words each)',extended:'EXTENDED (15 entries, 15-20 words each)',deep:'DEEP (20 entries, 15-20 words each)'};
+
+  const subjectFlag = subjectType === 'nonhuman' ? '\nSUBJECT TYPE: NON-HUMAN — Do NOT generate a human character. Derive everything from the seed.' : '\nSUBJECT TYPE: HUMAN';
+  const modeFlags=`\nBIOGRAPHY MODE: ${bioModeLabel[bioTier]}\nMEMORY MODE: ${memModeLabel[memTier]}${subjectFlag}`;
+
+  // Pre-fill ethnicity placeholders or switch to non-human avatar mode
+  let avatarSYS = SYS;
+  if(subjectType === 'nonhuman') {
+    // Replace everything from AVATAR PROMPT onward with non-human template
+    const avatarIdx = avatarSYS.indexOf('AVATAR PROMPT');
+    if(avatarIdx !== -1) {
+      avatarSYS = avatarSYS.slice(0, avatarIdx) + `AVATAR PROMPT
+Generate a photorealistic image of the subject exactly as described in the seed. This is NOT a human character.
+Do not apply any human anatomy, ethnicity, skin tone, or wardrobe logic.
+Derive the subject's appearance entirely from the seed description — creature, robot, mascot, animal, android, vessel, or other non-human entity.
+Derive the environment from the character's world as described in the seed.
+[Technical] Shot on 35mm f/2.8, high detail, 8k, realistic photography style, no illustration, no anime.
+`;
+    }
+  } else if(window._ethData) {
+    const d = window._ethData;
+    // Extract age from seed or use a safe default
+    const ageMatch = seed.match(/\b(1[6-9]|[2-9][0-9])(?=[-\s]?year)/i) || seed.match(/age[:\s]+(\d+)/i);
+    const ageFromSeed = ageMatch ? ageMatch[1] || ageMatch[0].replace(/\D/g,'') : null;
+    // Display name map — convert database key to adjective form for avatar prompt
+    const DISPLAY = {
+      'Afghanistan':'Afghan','Albania':'Albanian',
+      'Argentina':'Argentinian','Armenia':'Armenian','Australia':'Australian',
+      'Austria':'Austrian','Belarus':'Belarusian','Belgium':'Belgian',
+      'Brazil':'Brazilian','Bulgaria':'Bulgarian',
+      'Canada':'Canadian',
+      'China':'Chinese','Colombia':'Colombian','Croatia':'Croatian',
+      'Cuba':'Cuban','Czech_Republic':'Czech',
+      'Denmark':'Danish',
+      'Estonia':'Estonian','Finland':'Finnish','France':'French',
+      'Georgia':'Georgian','Germany':'German',
+      'Gibraltar':'Gibraltarian','Greece':'Greek','Greenland':'Greenlandic','Hungary':'Hungarian',
+      'Iceland':'Icelandic','India':'Indian',
+      'Indonesia':'Indonesian','Iran':'Iranian','Iraq':'Iraqi',
+      'Ireland':'Irish','Israel':'Israeli','Italy':'Italian',
+      'Japan':'Japanese',
+      'Kazakhstan':'Kazakh','Korea':'Korean',
+      'Latvia':'Latvian','Lebanon':'Lebanese',
+      'Lithuania':'Lithuanian',
+      'Malaysia':'Malaysian','Mexico':'Mexican',
+      'Mongolia':'Mongolian',
+      'Netherlands':'Dutch',
+      'New_Zealand':'New Zealander',
+      'Norway':'Norwegian',
+      'Pakistan':'Pakistani',
+      'Philippines':'Filipino','Poland':'Polish',
+      'Portugal':'Portuguese','Puerto_Rico':'Puerto Rican',
+      'Romania':'Romanian','Russia':'Russian',
+      'Samoa':'Samoan','Scotland':'Scottish',
+      'Serbia':'Serbian','Singapore':'Singaporean','Slovakia':'Slovak',
+      'Slovenia':'Slovenian','Spain':'Spanish',
+      'Sweden':'Swedish','Switzerland':'Swiss',
+      'Thailand':'Thai',
+      'Turkey':'Turkish',
+      'Ukraine':'Ukrainian',
+      'United_Kingdom':'British',
+      'USA':'American',
+      'Venezuela':'Venezuelan','Vietnam':'Vietnamese',
+      'Native_American':'Native American',
+      'Viking-Highland':'Viking-Highland','Arctic-Scandinavian':'Arctic-Scandinavian',
+      'Sherpa':'Sherpa','Tibet':'Tibetan','Hawaii':'Hawaiian'
+    };
+    const toAdj = (key) => DISPLAY[key] || key;
+    const eth1Label = toAdj(dominant) || 'heritage';
+    const eth2Label = secondary ? toAdj(secondary) : null;
+    const skinLabel = (dominant && secondary) ? eth1Label+'-'+eth2Label : eth1Label;
+    avatarSYS = avatarSYS
+      .replace('[AGE]', String(ageFromSeed || 'the character\'s'))
+      .replace('[Eth 1]', eth1Label)
+      .replace('[Eth 2]', skinLabel)
+      .replace('[tone]', d.tone || 'beige')
+      .replace('[undertone]', d.undertone || 'neutral')
+      .replace('[ETH_FACE_LABEL]', eth1Label)
+      .replace('[ETH_SKIN_LABEL]', skinLabel)
+      .replace('[ETH_TONE]', d.tone || 'beige')
+      .replace('[ETH_UNDERTONE]', d.undertone || 'neutral')
+      .replace('[ETH_FACE_SHAPE]', (d.faceShape || '[facial structure]').replace(/\boval\b/, 'oval face').replace(/\bstructure\b/, 'structure'))
+      .replace('[ETH_CHEEKBONES]', d.cheekbones || '[cheekbone structure]')
+      .replace('[ETH_JAWLINE]', d.jawline || '[jawline]')
+      .replace('[ETH_NOSE]', d.nose || '[nose bridge]')
+      .replace('[ETH_COMPLEXION]', d.complexion || '[skin texture]')
+      .replace('[ETH_EYE_COLOR]', d.eyes || '[eye color]')
+      .replace('[ETH_HAIR]', d.hair || '[hair]');
+  }
+  const prompt=`${archCtx}${ethLine}${seedLine}${vibeLine}${relLine}${metLine}${modeFlags}\n\nGenerate the complete character profile now.`;
+
+  // Hide output, show spinner
+  hide('forgeOutput');hide('forgeError');hide('forgeCopyTop');hide('forgeCopyBottom');
+  el('forgeBtn').disabled=true;el('forgeBtn').textContent='FORGING...';el('forgeBtn').style.color='#444';
+  const _genStart = Date.now();
+  // Show spinner area but not copy buttons yet
+  el('forgeOutputSections').innerHTML='';
+  show('forgeOutput');
+  show('forgeSpinner');
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4500,system:avatarSYS,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const txt=data?.content?.[0]?.text;
+    if(txt){
+      const _genElapsed = Date.now() - _genStart;
+      const _genSecs = Math.round(_genElapsed / 1000);
+      const _genTime = _genSecs >= 60 ? `${Math.floor(_genSecs/60)}m ${_genSecs%60}s` : `${_genSecs}s`;
+      if(window._sessionInputs) window._sessionInputs.genTime = _genTime;
+      // Strip archetype declaration line before display
+      const cleanTxt = txt.replace(/^ARCHETYPE:[^\n]+\n?/m, '').trimStart();
+      const truncated=truncateSections(cleanTxt);
+      forgeOutput=truncated;
+      // If no archetype was selected, parse declaration line from output
+      if(!currentArchetype && window._sessionInputs) {
+        const declMatch = txt.match(/^ARCHETYPE:\s*([^|\n]+)\|\s*FLAVOR:\s*([^\n]+)/m);
+        if(declMatch) {
+          const archName = declMatch[1].trim();
+          const flavorName = declMatch[2].trim();
+          const flavorPart = (flavorName && flavorName.toUpperCase() !== 'NONE') ? ' [' + flavorName + ']' : '';
+          window._sessionInputs.archetype = archName + flavorPart + ' (AI selected)';
+        } else {
+          window._sessionInputs.archetype = 'AI selected (no declaration found)';
+        }
+      }
+      const LABELS=['SUMMARY CARD','CORE','EXPANDED SEED','SPEECH DIRECTIVE','CHARACTER BIOGRAPHY','KEY MEMORIES','KINDROID GREETING A','KINDROID GREETING B','KINDROID GREETING C','KINDROID EXAMPLE MESSAGES','AVATAR PROMPT'];
+      const sections=[];
+      let searchFrom=0;
+      for(let i=0;i<LABELS.length;i++){
+        const label=LABELS[i];
+        const idx=truncated.indexOf(label,searchFrom);if(idx===-1) continue;
+        const start=idx+label.length;
+        // Find earliest occurrence of ANY remaining label to cap this section
+        let end=truncated.length;
+        for(let j=i+1;j<LABELS.length;j++){
+          const nextIdx=truncated.indexOf(LABELS[j],start);
+          if(nextIdx!==-1 && nextIdx<end) end=nextIdx;
+        }
+        const body=truncated.slice(start,end).trim();
+        if(body) sections.push({title:label,body});
+        searchFrom=start;
+      }
+      setHTML('forgeOutputSections',sections.map(s=>
+        `<div class="section-card">
+          <div class="section-card-head">
+            <span>${escH(s.title)}</span>
+            <button class="small-btn" onclick="copySection(this)" data-text="${escH(s.body)}">⎘</button>
+          </div>
+          <div class="section-card-body">${escH(s.body)}</div>
+        </div>`
+      ).join(''));
+
+      // Append session inputs block to output
+      if(window._sessionInputs) {
+        const si = window._sessionInputs;
+        const flavorLine = si.flavor ? `\nFlavor: ${si.flavor}` : '';
+        const expandedSeedTxt = extractSection(cleanTxt, 'EXPANDED SEED');
+        const inputsText = [
+          'SESSION INPUTS',
+          '─────────────────────────────',
+          `Generated: ${si.timestamp}`,
+          `Subject Type: ${si.subjectTypeLabel || 'HUMAN'}`,
+          `Generation Time: ${si.genTime||'—'}`,
+          `Archetype: ${si.archetype}${flavorLine}`,
+          `Bio Tier: ${si.bioTier} | Memory Tier: ${si.memTier}`,
+          '',
+          'SEED:',
+          si.seed || '(none)',
+          '',
+          'EXPANDED SEED:',
+          expandedSeedTxt || '(none)',
+          '',
+          'VIBE:',
+          si.vibe || '(none)',
+          '',
+          'RELATIONSHIP TYPE:',
+          si.relType || '(none)',
+          '',
+          'WHERE WE MET:',
+          si.whereMet || '(none)',
+        ].join('\n');
+
+        const inputsCard = `<div class="section-card" style="margin-top:8px;border-color:var(--accent);opacity:0.85">
+          <div class="section-card-head">
+            <span>SESSION INPUTS</span>
+            <button class="small-btn" onclick="copySection(this)" data-text="${escH(inputsText)}">⎘</button>
+          </div>
+          <div class="section-card-body" style="white-space:pre-wrap;font-size:11px">${escH(inputsText)}</div>
+        </div>`;
+        el('forgeOutputSections').insertAdjacentHTML('beforeend', inputsCard);
+      }
+
+      hide('forgeSpinner');
+      show('forgeOutput');show('forgeCopyTop');show('forgeCopyBottom');
+    } else {
+      el('forgeError').textContent=data?.error?.message||'No output returned.';
+      show('forgeError');hide('forgeOutput');hide('forgeSpinner');
+    }
+  } catch(e){
+    el('forgeError').textContent='Request failed: '+e.message;
+    show('forgeError');hide('forgeOutput');hide('forgeSpinner');
+  }
+  el('forgeBtn').disabled=false;el('forgeBtn').textContent='FORGE CHARACTER';el('forgeBtn').style.color='';
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function resetForge(){
+  currentArchetype=null;currentFlavor=null;manualArchetype=false;
+  updateArchetypeUI();
+  archReset();
+  ethReset();
+  ['seedInput','vibeInput','relTypeInput','whereMetInput'].forEach(id=>{const e=el(id);if(e)e.value='';});
+  selectTier('bio','standard');selectTier('mem','standard');
+  ['bio','mem'].forEach(type=>{
+    ['standard','extended','deep'].forEach(t=>{
+      const dot=el(type+'Rec-'+t);
+      if(dot){dot.textContent='';dot.className='tier-rec-dot';}
+      el(type+'Opt-'+t)?.classList.remove('recommended','recommended-ext','recommended-deep');
+    });
+  });
+  hide('forgeOutput');hide('forgeError');hide('forgeCopyTop');hide('forgeCopyBottom');
+  el('forgeOutputSections').innerHTML='';forgeOutput='';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(function init(){
+  hide('archetypeCard');hide('flavorSection');
+  hide('forgeOutput');hide('forgeError');hide('forgeCopyTop');hide('forgeCopyBottom');
+})();
+</script>
+
+<script>
+// ── ETHNICITY DROPDOWN ────────────────────────────────────────────────────────
+// Builds a flat index from the existing ethnicityVisualReference
+const ETH_REGIONS = {};
+// ethnicityVisualReference is flat — build regions from it for display
+// Use the regional groupings from the DB file structure
+const ETH_REGION_MAP = {
+  'AFRICA': ['South Africa'],
+  'ASIA — EAST': ['China','Japan','Korea','Mongolia','Taiwan'],
+  'ASIA — SOUTH': ['India','Pakistan','Sherpa','Tibet'],
+  'ASIA — SOUTHEAST': ['Indonesia','Malaysia','Philippines','Singapore','Thailand','Vietnam'],
+  'CAUCASUS & CENTRAL ASIA': ['Afghanistan','Armenia','Georgia','Kazakhstan'],
+  'EUROPE — NORDIC': ['Arctic-Scandinavian','Denmark','Estonia','Finland','Iceland','Latvia','Lithuania','Norway','Sweden','Viking-Highland'],
+  'EUROPE — WEST': ['Austria','Belgium','France','Germany','Gibraltar','Ireland','Netherlands','Portugal','Scotland','Switzerland','United Kingdom'],
+  'EUROPE — SOUTH': ['Albania','Croatia','Greece','Italy','Serbia','Slovenia','Spain'],
+  'EUROPE — EAST': ['Belarus','Bulgaria','Czech Republic','Hungary','Poland','Romania','Russia','Slovakia','Ukraine'],
+  'MIDDLE EAST': ['Iran','Iraq','Israel','Lebanon','Turkey'],
+  'NORTH AMERICA': ['Canada','Greenland','Mexico','Native American','USA'],
+  'CENTRAL AMERICA & CARIBBEAN': ['Cuba','Puerto Rico'],
+  'SOUTH AMERICA': ['Argentina','Brazil','Colombia','Venezuela'],
+  'OCEANIA': ['Australia','Hawaii','New Zealand','Samoa']
+}
+
+// Build flat search index from what's actually in the database
+const ETH_ALL = Object.keys(ethnicityVisualReference).sort();
+
+let eth1name = null, eth2name = null;
+
+function ethSearch(n) {
+  const inp = document.getElementById('es'+n);
+  const pred = document.getElementById('ep'+n);
+  const q = inp.value.trim().toLowerCase();
+  if(!q) { pred.classList.remove('show'); pred.innerHTML=''; return; }
+  const matches = ETH_ALL.filter(c => c.toLowerCase().includes(q)).slice(0,10);
+  if(!matches.length) { pred.classList.remove('show'); return; }
+  pred.innerHTML = matches.map(c =>
+    '<div class="eth-predict-item" onclick="ethPick('+n+',\''+c.replace(/'/g,"\\'")+'\')">'+c+'</div>'
+  ).join('');
+  pred.classList.add('show');
+}
+
+function ethPick(n, name) {
+  if(n===1) eth1name=name; else eth2name=name;
+  document.getElementById('es'+n).value = name;
+  document.getElementById('el'+n).textContent = name;
+  document.getElementById('ep'+n).classList.remove('show');
+  document.getElementById('ep'+n).innerHTML = '';
+  document.getElementById('ea'+n).classList.remove('show');
+  document.getElementById('emb'+n).classList.remove('open');
+  // Update active state in accordion
+  document.querySelectorAll('#ea'+n+' .eth-country').forEach(el => {
+    el.classList.toggle('active', el.dataset.name === name);
+  });
+}
+
+function ethToggle(n) {
+  const acc = document.getElementById('ea'+n);
+  const btn = document.getElementById('emb'+n);
+  const isOpen = acc.classList.contains('show');
+  if(!isOpen && !acc.dataset.built) ethBuildAccordion(n);
+  acc.classList.toggle('show', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+function ethBuildAccordion(n) {
+  const acc = document.getElementById('ea'+n);
+  const sel = n===1 ? eth1name : eth2name;
+  let html = '';
+  for(const [region, countries] of Object.entries(ETH_REGION_MAP)) {
+    // Only show countries that exist in the database
+    const valid = countries.filter(c => ethnicityVisualReference[c]);
+    if(!valid.length) continue;
+    html += '<div class="eth-region-head" onclick="this.classList.toggle(\'open\')">'+region+'<span>▶</span></div>' +
+      '<div class="eth-region-countries">' +
+      valid.map(c => '<div class="eth-country'+(c===sel?' active':'')+'" data-name="'+c+'" onclick="ethPick('+n+',\''+c.replace(/'/g,"\\'")+'\')">'+c+'</div>').join('') +
+      '</div>';
+  }
+  acc.innerHTML = html;
+  acc.dataset.built = '1';
+}
+
+
+
+function ethReset() {
+  eth1name = null; eth2name = null;
+  ['es1','es2'].forEach(id => { document.getElementById(id).value = ''; });
+  ['el1','el2'].forEach(id => { document.getElementById(id).textContent = ''; });
+  ['ep1','ep2'].forEach(id => { document.getElementById(id).classList.remove('show'); });
+  ['ea1','ea2'].forEach(id => { document.getElementById(id).classList.remove('show'); document.getElementById(id).dataset.built=''; });
+  ['emb1','emb2'].forEach(id => { document.getElementById(id).classList.remove('open'); });
+
+}
+
+// Close predict on outside click
+document.addEventListener('click', function(e) {
+  [1,2].forEach(n => {
+    const box = document.getElementById('eb'+n);
+    if(box && !box.contains(e.target)) {
+      document.getElementById('ep'+n).classList.remove('show');
+    }
+  });
+});
+
+// Hook into the demonym detection — override window._ethData after detection
+// by injecting the selected country names into the seed BEFORE forge-17 parses it
+</script>
+
+</body>
+</html>
